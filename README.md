@@ -128,3 +128,12 @@ uvicorn app.main:app --reload
 API dokümantasyonuna erişmek için:
 
 http://127.0.0.1:8000/docs
+
+
+# DİKKAT
+Models dosyaları sadece veritabanı yapısını tutacak.içine fonksiyon,işlem veya API yazılmayacak.
+
+models yazarken;
+from app.core.database import Base 
+
+database kullanımı için get_db() kullanılacak.
