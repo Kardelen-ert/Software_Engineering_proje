@@ -1,17 +1,36 @@
-def generate_recommendation(emotion, stress):
+import random
 
-    rec=[]
+def generate_recommendation(emotion, stress):
+    rec = []
+
+    anxiety_recommendations = [
+        "Kaygı seviyen yüksek görünüyor. Kısa bir yürüyüş yapmayı deneyebilirsin.",
+        "Biraz derin nefes egzersizi yapman kaygını azaltmana yardımcı olabilir.",
+        "Ilık bir yeşil çay içip birkaç dakika sakinleşmeye ne dersin?"
+    ]
+
+    sad_recommendations = [
+        "Seni mutlu eden bir anını düşünmeni tavsiye ederim.",
+        "Sevdiğin bir müziği açıp biraz kendine zaman ayırabilirsin.",
+        "Yakın hissettiğin biriyle kısa bir sohbet yapmak iyi gelebilir."
+    ]
+
+    stress_recommendations = [
+        "Stres seviyen çok yüksek. Kısa bir mola vermeyi deneyebilirsin.",
+        "Biraz esneme hareketi ya da hafif egzersiz sana iyi gelebilir.",
+        "Kendine nazik davran ve birkaç dakika sadece dinlenmeye odaklan."
+    ]
 
     if emotion.anxiety > 0.5:
-        rec.append("Kaygı seviyen yüksek. Yürüyüş yapmayı deneyebilirsin ya da yeşil çay içebilirsin.")
+        rec.append(random.choice(anxiety_recommendations))
 
     if emotion.sad > 0.5:
-        rec.append("Seni mutlu eden anını düşünmeni tavsiye ederim.")
+        rec.append(random.choice(sad_recommendations))
 
     if emotion.stress > 6:
-        rec.append("Stres seviyen çok yüksek. Senden değerli bir şey yok. Stres azaltacak aktivite yapmak ister misin?")
+        rec.append(random.choice(stress_recommendations))
 
     if not rec:
-        rec.append("genel durum dengeli duruyor. Mükemmelsin!")
+        rec.append("Genel durum dengeli görünüyor. Böyle devam et.")
 
     return rec
