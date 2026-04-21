@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.daily_entry import DailyEntry
+from app.models.entry import Entry  
 
 from app.services.emotion_service import analyze_entry_nlp
 from app.services.stress_model_service import predict_stress, predict_stress_batch
@@ -11,15 +11,13 @@ from app.services.recommendation_service import generate_recommendations
 router = APIRouter()
 
 
-# 🔹 TEK ANALİZ
 @router.post("/entries/{id}/analyze")
 def analyze_entry(id: int, db: Session = Depends(get_db)):
 
-    entry = db.query(DailyEntry).filter(
-        DailyEntry.id == id
+    entry = db.query(Entry).filter(   
+        Entry.id == id
     ).first()
 
-    # ❗ HATA KONTROLÜ EKLENDİ
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
 
@@ -35,18 +33,16 @@ def analyze_entry(id: int, db: Session = Depends(get_db)):
             "anger": emotion.anger,
             "anxiety": emotion.anxiety
         },
-        "predicted_stress": float(stress),  # ❗ JSON için garanti
+        "predicted_stress": float(stress),
         "recommendations": rec
     }
 
 
-# 🔹 TÜM VERİLER
 @router.get("/entries/analyze/all")
 def analyze_all(db: Session = Depends(get_db)):
 
-    entries = db.query(DailyEntry).all()
+    entries = db.query(Entry).all()   
 
-    # ❗ boş veri kontrolü
     if not entries:
         return {"message": "No entries found"}
 
@@ -67,7 +63,7 @@ def analyze_all(db: Session = Depends(get_db)):
                 "anger": emotion.anger,
                 "anxiety": emotion.anxiety
             },
-            "predicted_stress": float(stress),  # ❗ numpy vs fix
+            "predicted_stress": float(stress),
             "recommendations": rec
         })
 
