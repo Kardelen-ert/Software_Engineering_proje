@@ -27,6 +27,15 @@ def generate_recommendation(emotion, stress):
         "Şu an yaşadığın stres seni baskı altında hissettiriyor olabilir ama unutma, senden daha değerli hiçbir şey yok. Eğer mümkünse işlerini önem sırasına koyup en acil olmayanları biraz erteleyebilirsin. Kısa bir yürüyüş, nefes egzersizi veya sevdiğin sakin bir müzikle birkaç dakika dinlenmek stres yükünü azaltmana yardımcı olabilir."
     ]
 
+    anger_recommendations = [
+    "Şu an kendini biraz gergin ve öfkeli hissediyor olabilirsin. Bu durumda hemen tepki vermek yerine birkaç dakika durup nefesine odaklanmak sana iyi gelebilir. Bulunduğun ortamdan kısa süreliğine uzaklaşmak da duygularını dengelemeni kolaylaştırır.",
+    
+    "Öfke yoğun bir duygudur ama kontrol edilebilir. Ellerini gevşetmek, derin nefes almak ve bulunduğun ortamda kısa bir mola vermek seni rahatlatabilir. İstersen hislerini yazıya dökerek de zihnini boşaltabilirsin.",
+    
+    "Şu an içindeki gerginliği azaltmak için fiziksel bir hareket iyi gelebilir. Kısa bir yürüyüş yapmak, biraz esneme hareketi yapmak veya su içmek bedenini sakinleştirerek öfke seviyeni düşürmeye yardımcı olabilir."
+    ]
+
+
     if emotion.anxiety > 0.5:
         rec.append(random.choice(anxiety_recommendations))
 
@@ -35,6 +44,9 @@ def generate_recommendation(emotion, stress):
 
     if emotion.stress > 6:
         rec.append(random.choice(stress_recommendations))
+
+    if emotion.anger > 0.5:
+       rec.append(random.choice(anger_recommendations))
 
     if not rec:
         rec.append(
