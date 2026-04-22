@@ -31,10 +31,11 @@ def analyze_entry_nlp(db, entry):
         score=result["score"]
 
         if label == "positive":
-            happy=max(happy, score)
+           happy = max(happy, score)
         else:
-            sad=max(sad,score)
-            anxiety=max(anxiety, score *0.7)
+          sad = max(sad, score * 0.5)
+          anxiety = max(anxiety, score * 0.3)
+          anger = max(anger, score * 0.2)
     
     emotion=EmotionResult(
         entry_id= entry.id,
