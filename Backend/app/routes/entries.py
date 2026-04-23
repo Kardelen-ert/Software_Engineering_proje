@@ -50,6 +50,10 @@ def analyze_all(db: Session = Depends(get_db)):
     results = []
 
     for entry, stress in zip(entries, stresses):
+    # TODO: Her istekte emotion analizi yeniden hesaplanıyor.
+    # İleride performans için sonuçlar cache'lenmeli veya DB'den çekilmeli.
+
+
         emotion = analyze_entry_nlp(db, entry)
         recommendations = generate_recommendation(emotion, stress)
         results.append(build_analysis_response(entry, emotion, stress, recommendations))
