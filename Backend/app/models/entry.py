@@ -9,7 +9,14 @@ class DailyEntry(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"))
+    #user_id = Column(Integer, ForeignKey("users.id"))
+# TODO: User sistemi henüz aktif değil (MVP aşaması)
+# Bu yüzden ForeignKey geçici olarak devre dışı bırakıldı.
+# User modeli ve users tablosu eklendiğinde tekrar aktif edilecek.
+# user_id = Column(Integer, ForeignKey("users.id"))
+
+
+
 
     text = Column(Text)  
 

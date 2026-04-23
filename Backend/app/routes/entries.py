@@ -7,7 +7,7 @@ from app.schemas.ai import EntryAnalysisResponse
 from app.services.emotion_service import analyze_entry_nlp
 from app.services.recommendation_service import generate_recommendation
 from app.services.stress_model_service import predict_stress, predict_stress_batch
-
+from app.schemas.entry import EntryCreate
 router = APIRouter()
 
 
@@ -22,6 +22,24 @@ def build_analysis_response(entry, emotion, stress: float, recommendations: list
         },
         "predicted_stress": float(stress),
         "recommendations": recommendations,
+    }
+
+@router.post("/entries")
+def create_entry(entry: EntryCreate, db: Session = Depends(get_db)):
+    new_entry = DailyEntry(
+        text=entry.text,
+        water_liters=entry.water_liters,
+        sleep_hours=entry.sleep_hours,
+        stress_self=entry.stress_self
+    )
+
+    db.add(new_entry)
+    db.commit()
+    db.refresh(new_entry)
+
+    return {
+        "id": new_entry.id,
+        "message": "Entry created successfully"
     }
 
 
