@@ -11,7 +11,7 @@ class DailyEntry(Base):
 
     user_id = Column(Integer, ForeignKey("users.id"))
 
-    text = Column(Text)  # ⚠️ uzun metin için Text
+    text = Column(Text)  
 
     water_liters = Column(Float)
     sleep_hours = Column(Float)
