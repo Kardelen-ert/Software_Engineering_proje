@@ -79,16 +79,6 @@ def analyze_all(db: Session = Depends(get_db)):
     return results
 
 
-@router.get("/entries")
-def get_entries(db: Session = Depends(get_db)):
-    entries = db.query(DailyEntry).all()
-
-    if not entries:
-        return []
-
-    return entries
-
-
 @router.delete("/entries/{id}")
 def delete_entry(id: int, db: Session = Depends(get_db)):
 
@@ -101,3 +91,4 @@ def delete_entry(id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "Entry deleted"}
+    
