@@ -43,6 +43,16 @@ def create_entry(entry: EntryCreate, db: Session = Depends(get_db)):
     }
 
 
+@router.get("/entries")
+def get_entries(db: Session = Depends(get_db)):
+    entries = db.query(DailyEntry).all()
+
+    if not entries:
+        return []
+
+    return entries
+
+
 @router.post("/entries/{id}/analyze", response_model=EntryAnalysisResponse)
 def analyze_entry(id: int, db: Session = Depends(get_db)):
     entry = db.query(DailyEntry).filter(DailyEntry.id == id).first()
