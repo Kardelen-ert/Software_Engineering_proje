@@ -24,6 +24,7 @@ def build_analysis_response(entry, emotion, stress: float, recommendations: list
         "recommendations": recommendations,
     }
 
+
 @router.post("/entries")
 def create_entry(entry: EntryCreate, db: Session = Depends(get_db)):
     new_entry = DailyEntry(
@@ -41,6 +42,31 @@ def create_entry(entry: EntryCreate, db: Session = Depends(get_db)):
         "id": new_entry.id,
         "message": "Entry created successfully"
     }
+
+
+@router.get("/entries")
+def get_entries(db: Session = Depends(get_db)):
+    entries = db.query(DailyEntry).all()
+
+    if not entries:
+        return []
+
+    return entries
+
+
+@router.delete("/entries/{id}")
+def delete_entry(id: int, db: Session = Depends(get_db)):
+
+    entry = db.query(DailyEntry).filter(DailyEntry.id == id).first()
+
+    if not entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
+    db.delete(entry)
+    db.commit()
+
+    return {"message": "Entry deleted"}
+
 
 
 @router.post("/entries/{id}/analyze", response_model=EntryAnalysisResponse)
