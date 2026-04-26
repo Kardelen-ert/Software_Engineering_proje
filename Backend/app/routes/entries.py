@@ -8,6 +8,7 @@ from app.services.emotion_service import analyze_entry_nlp
 from app.services.recommendation_service import generate_recommendation
 from app.services.stress_model_service import predict_stress, predict_stress_batch
 from app.schemas.entry import EntryCreate
+from app.services.entry_service import create_entry, get_all_entries, delete_entry
 router = APIRouter()
 
 
@@ -26,17 +27,8 @@ def build_analysis_response(entry, emotion, stress: float, recommendations: list
 
 
 @router.post("/entries")
-def create_entry(entry: EntryCreate, db: Session = Depends(get_db)):
-    new_entry = DailyEntry(
-        text=entry.text,
-        water_liters=entry.water_liters,
-        sleep_hours=entry.sleep_hours,
-        stress_self=entry.stress_self
-    )
-
-    db.add(new_entry)
-    db.commit()
-    db.refresh(new_entry)
+def create_entry_endpoint(entry: EntryCreate, db: Session = Depends(get_db)):
+    new_entry = create_entry(db, entry)
 
     return {
         "id": new_entry.id,
@@ -44,26 +36,19 @@ def create_entry(entry: EntryCreate, db: Session = Depends(get_db)):
     }
 
 
+
 @router.get("/entries")
 def get_entries(db: Session = Depends(get_db)):
-    entries = db.query(DailyEntry).all()
+    return get_all_entries(db)
 
-    if not entries:
-        return []
-
-    return entries
 
 
 @router.delete("/entries/{id}")
-def delete_entry(id: int, db: Session = Depends(get_db)):
-
-    entry = db.query(DailyEntry).filter(DailyEntry.id == id).first()
+def delete_entry_endpoint(id: int, db: Session = Depends(get_db)):
+    entry = delete_entry(db, id)
 
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
-
-    db.delete(entry)
-    db.commit()
 
     return {"message": "Entry deleted"}
 
