@@ -137,3 +137,28 @@ models yazarken;
 from app.core.database import Base 
 
 database kullanımı için get_db() kullanılacak.
+
+
+## Environment Variables (.env)
+
+Projeyi çalıştırmadan önce `Backend` klasörü içine `.env` dosyası oluşturulmalıdır.
+
+Dosya yolu:
+
+```text
+Backend/.env
+
+içeriği:
+SECRET_KEY=b7f729e9f6c74e148295d9ac34ef53740c818e4a4022f926f9b78598dc2ecab0
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+.env dosyası güvenlik nedeniyle GitHub reposuna pushlanmaz. Her ekip üyesi kendi bilgisayarında manuel oluşturmalıdır.
+
+
+
+
+
+
+
+
