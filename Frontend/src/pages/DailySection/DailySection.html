@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodTrack - Günlük Girişi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="entry">
+    <main class="page-shell">
+        <section class="card card-wide">
+            <div class="hero">
+                <span class="hero-badge">Günlük planlayıcı</span>
+                <h1>Günün nasıl geçtiğini ve alışkanlık hedeflerini birlikte düzenleyelim.</h1>
+                <p class="subtitle">Bu alan artık kişiye özel çalışıyor. Eklediğin alışkanlıklar profilinde kalır, istediğinde tekrar seçip günlük takibini yapabilirsin.</p>
+            </div>
+
+            <form id="entryForm" class="stack-lg">
+                <label for="journal">Günlük Metin</label>
+                <textarea id="journal" placeholder="Selammm! Bugün neler oldu, nasıl hissediyorsun?" required></textarea>
+
+                <label>Duygu Etiketi</label>
+                <div class="mood-list">
+                    <button type="button" class="mood-btn" data-mood="Mutlu">Mutlu</button>
+                    <button type="button" class="mood-btn" data-mood="Üzgün">Üzgün</button>
+                    <button type="button" class="mood-btn" data-mood="Kaygılı">Kaygılı</button>
+                    <button type="button" class="mood-btn" data-mood="Öfkeli">Öfkeli</button>
+                </div>
+
+                <label for="stress">Duygu / Stres Yoğunluğu: <span id="stressValue">5</span></label>
+                <input type="range" id="stress" min="1" max="10" value="5">
+
+                <div class="input-group">
+                    <div>
+                        <label for="water">Su Miktarı / Litre</label>
+                        <input type="number" id="water" min="0" max="10" step="0.1" placeholder="2.5" required>
+                    </div>
+
+                    <div>
+                        <label for="sleep">Uyku Saati</label>
+                        <input type="number" id="sleep" min="0" step="0.5" placeholder="7" required>
+                    </div>
+                </div>
+
+                <section class="habit-builder">
+                    <div class="habit-builder-top">
+                        <div class="section-heading">
+                            <h2>Alışkanlıklarını Seç</h2>
+                            <p>Hazır kartlardan seç, kendi kartını ekle ve profilinde sakla.</p>
+                        </div>
+
+                        <div class="habit-stats">
+                            <div class="habit-stat-card">
+                                <strong id="selectedHabitCount">0</strong>
+                                <span>Bugün seçilen</span>
+                            </div>
+                            <div class="habit-stat-card">
+                                <strong id="profileHabitCount">0</strong>
+                                <span>Profilde kayıtlı</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <section class="profile-panel">
+                        <div class="selected-header">
+                            <h3>Kişisel Profil Alışkanlıkların</h3>
+                            <span class="selected-badge" id="profileBadge">0 kayıt</span>
+                        </div>
+                        <p class="profile-copy">Buraya eklediğin alışkanlıklar sonraki girişlerinde de burada kalır.</p>
+                        <ul id="profileHabitsList" class="selected-list">
+                            <li class="empty-state">Henüz profiline özel alışkanlık eklenmedi.</li>
+                        </ul>
+                    </section>
+
+                    <div class="habit-category">
+                        <div class="habit-category-header">
+                            <h3>Sağlık</h3>
+                            <p>Bedene iyi gelen günlük hedefler</p>
+                        </div>
+                        <div class="habit-options">
+                            <button type="button" class="habit-card theme-water" data-habit="Su içtim" data-category="Sağlık">
+                                <span class="habit-icon">💧</span>
+                                <span class="habit-title">Su içtim</span>
+                                <span class="habit-desc">Gün içinde su hedefimi tamamladım.</span>
+                                <span class="habit-check">✓</span>
+                            </button>
+                            <button type="button" class="habit-card theme-move" data-habit="Spor yaptım" data-category="Sağlık">
+                                <span class="habit-icon">🏃</span>
+                                <span class="habit-title">Spor yaptım</span>
+                                <span class="habit-desc">Hareket ederek enerjimi yükselttim.</span>
+                                <span class="habit-check">✓</span>
+                            </button>
+                            <button type="button" class="habit-card theme-sleep" data-habit="Erken uyudum" data-category="Sağlık">
+                                <span class="habit-icon">🌙</span>
+                                <span class="habit-title">Erken uyudum</span>
+                                <span class="habit-desc">Dinlenmek için uyku düzenimi korudum.</span>
+                                <span class="habit-check">✓</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="habit-category">
+                        <div class="habit-category-header">
+                            <h3>Zihin</h3>
+                            <p>Ruh halini sakinleştiren küçük pratikler</p>
+                        </div>
+                        <div class="habit-options">
+                            <button type="button" class="habit-card theme-focus" data-habit="Meditasyon yaptım" data-category="Zihin">
+                                <span class="habit-icon">🧘</span>
+                                <span class="habit-title">Meditasyon yaptım</span>
+                                <span class="habit-desc">Biraz durup nefesime odaklandım.</span>
+                                <span class="habit-check">✓</span>
+                            </button>
+                            <button type="button" class="habit-card theme-book" data-habit="Kitap okudum" data-category="Zihin">
+                                <span class="habit-icon">📚</span>
+                                <span class="habit-title">Kitap okudum</span>
+                                <span class="habit-desc">Zihnimi besleyen bir okuma yaptım.</span>
+                                <span class="habit-check">✓</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="habit-category">
+                        <div class="habit-category-header">
+                            <h3>Üretkenlik</h3>
+                            <p>Günü daha verimli hissettiren adımlar</p>
+                        </div>
+                        <div class="habit-options">
+                            <button type="button" class="habit-card theme-study" data-habit="Ders çalıştım" data-category="Üretkenlik">
+                                <span class="habit-icon">📝</span>
+                                <span class="habit-title">Ders çalıştım</span>
+                                <span class="habit-desc">Odaklanıp hedefim için emek verdim.</span>
+                                <span class="habit-check">✓</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="habit-category">
+                        <div class="habit-category-header">
+                            <h3>Kişisel Kartların</h3>
+                            <p>Profiline eklediğin alışkanlıklar burada görünür</p>
+                        </div>
+                        <div class="habit-options" id="customHabitOptions">
+                            <div class="empty-custom-habits">Henüz profiline özel kart yok.</div>
+                        </div>
+                    </div>
+
+                    <div class="custom-habit-panel">
+                        <div class="custom-habit-copy">
+                            <h3>Kendi alışkanlığını oluştur</h3>
+                            
+                        </div>
+                        <div class="custom-habit-row">
+                            <input type="text" id="customHabit" placeholder="Örnek: 20 dakika yürüdüm">
+                            <button type="button" id="addHabitBtn" class="secondary-btn">Profile ekle</button>
+                        </div>
+                    </div>
+
+                    <div class="selected-habits-box">
+                        <div class="selected-header">
+                            <h3>Bugün Seçilen Alışkanlıklar</h3>
+                            <span id="selectedHabitBadge" class="selected-badge">0 seçim</span>
+                        </div>
+                        <ul id="selectedHabitsList" class="selected-list">
+                            <li class="empty-state">Henüz alışkanlık seçilmedi.</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <button type="submit" class="save-btn">Alışkanlık sayfasına geç</button>
+            </form>
+
+            <p id="message" class="message"></p>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodTrack - Alışkanlık Takibi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="habits">
+    <main class="page-shell">
+        <section class="card card-wide">
+            <div class="hero">
+                <span class="hero-badge">Alışkanlık takibi</span>
+                <h1>Seçtiğin alışkanlıkları şimdi tek tek işaretleyebilirsin.</h1>
+                
+            </div>
+
+            <section class="summary-card" id="dailySummary"></section>
+
+            <section class="progress-panel">
+                <div class="progress-copy">
+                    <h2>Bugünkü ilerlemen</h2>
+                    <p id="progressText">Henüz seçim yapılmadı.</p>
+                </div>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+            </section>
+
+            <section class="stack-lg">
+                <div class="section-heading">
+                    <h2>Bugünkü Alışkanlıkların</h2>
+                    <p>Tüm kartlarda tik veya çarpı seçildiğinde kaydetme akışı tamamlanır.</p>
+                </div>
+
+                <div id="habitTrackerList" class="habit-tracker-list"></div>
+
+                <div class="page-actions">
+                    <a href="index.html" class="ghost-link">Geri dön</a>
+                    <button type="button" id="saveHabitsBtn" class="save-btn">Günlüğü kaydet</button>
+                </div>
+            </section>
+
+            <p id="habitMessage" class="message"></p>
+
+            <section class="entries-section">
+                <div class="section-heading">
+                    <h2>Son Kayıtlar</h2>
+                    <p>Kaydedilen günlük bilgileri burada görünsün.</p>
+                </div>
+                <div id="entriesList" class="entries-grid"></div>
+            </section>
+
+            <section class="entries-section">
+                <div class="section-heading">
+                    <h2>Kaydedilen Alışkanlık Notları</h2>
+                    
+                </div>
+                <div id="habitHistoryList" class="entries-grid"></div>
+            </section>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
