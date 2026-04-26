@@ -39,7 +39,7 @@ def generate_recommendation(emotion, stress: float) -> list[str]:
     if emotion.sad > 0.5:
         recommendations.append(random.choice(SAD_RECOMMENDATIONS))
 
-    if stress > 6:
+    if stress > 5:
         recommendations.append(random.choice(STRESS_RECOMMENDATIONS))
 
     if emotion.anger > 0.5:

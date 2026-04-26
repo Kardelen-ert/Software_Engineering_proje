@@ -77,7 +77,7 @@ def analyze_entry(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Entry not found")
 
     emotion = analyze_entry_nlp(db, entry)
-    stress = predict_stress(entry)
+    stress = entry.stress_self
     recommendations = generate_recommendation(emotion, stress)
 
     return build_analysis_response(entry, emotion, stress, recommendations)
