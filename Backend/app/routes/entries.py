@@ -7,7 +7,7 @@ from app.schemas.ai import EntryAnalysisResponse
 from app.services.emotion_service import analyze_entry_nlp
 from app.services.recommendation_service import generate_recommendation
 from app.services.stress_model_service import predict_stress, predict_stress_batch
-from app.schemas.entry import EntryCreate
+from app.schemas.entry import EntryCreate, EntryResponse
 from app.services.entry_service import create_entry, get_all_entries, delete_entry
 router = APIRouter()
 
@@ -26,21 +26,14 @@ def build_analysis_response(entry, emotion, stress: float, recommendations: list
     }
 
 
-@router.post("/entries")
+@router.post("/entries", response_model=EntryResponse)
 def create_entry_endpoint(entry: EntryCreate, db: Session = Depends(get_db)):
-    new_entry = create_entry(db, entry)
-
-    return {
-        "id": new_entry.id,
-        "message": "Entry created successfully"
-    }
+    return create_entry(db, entry)
 
 
-
-@router.get("/entries")
+@router.get("/entries", response_model=list[EntryResponse])
 def get_entries(db: Session = Depends(get_db)):
     return get_all_entries(db)
-
 
 
 @router.delete("/entries/{id}")
