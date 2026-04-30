@@ -211,3 +211,7 @@ __marimo__/
 Backend/moodtrack.db
 
 
+
+Backend/models/
+
+Backend/models/emotion_model/checkpoint-*/
