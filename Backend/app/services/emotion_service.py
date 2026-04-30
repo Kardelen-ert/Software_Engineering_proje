@@ -1,52 +1,61 @@
-﻿from sqlalchemy.orm import Session
-from transformers import pipeline
+from __future__ import annotations
+
+from pathlib import Path
+
+import torch
+from sqlalchemy.orm import Session
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from app.models.emotion_results import EmotionResult
 
-MODEL_NAME = "savasy/bert-base-turkish-sentiment-cased"
-_classifier = None
+
+LABEL_COLUMNS = ["happy", "sad", "anger", "anxiety"]
+MODEL_DIR = Path(__file__).resolve().parents[2] / "models" / "emotion_model"
+_tokenizer = None
+_model = None
 
 
-def get_classifier():
-    global _classifier
+def get_emotion_model():
+    global _tokenizer, _model
 
-    if _classifier is None:
-        _classifier = pipeline("sentiment-analysis", model=MODEL_NAME)
+    if _tokenizer is None or _model is None:
+        if not MODEL_DIR.exists():
+            raise FileNotFoundError(
+                f"Emotion model not found: {MODEL_DIR}. "
+                "Önce Backend/train_emotion_model.py ile modeli eğit."
+            )
 
-    return _classifier
+        _tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
+        _model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
+        _model.eval()
+
+    return _tokenizer, _model
 
 
-def split_text(text: str, max_words: int = 400) -> list[str]:
+def split_text(text: str, max_words: int = 200) -> list[str]:
     clean_text = (text or "").strip()
     if not clean_text:
         return []
 
     words = clean_text.split()
-    chunks = []
-
-    for i in range(0, len(words), max_words):
-        chunks.append(" ".join(words[i:i + max_words]))
-
-    return chunks
+    return [" ".join(words[i:i + max_words]) for i in range(0, len(words), max_words)]
 
 
-def _map_sentiment_to_emotions(label: str, score: float) -> dict[str, float]:
-    normalized_label = label.lower()
+def predict_chunk_scores(text: str) -> dict[str, float]:
+    tokenizer, model = get_emotion_model()
+    encoded = tokenizer(
+        text,
+        truncation=True,
+        padding=True,
+        max_length=128,
+        return_tensors="pt",
+    )
 
-    if "pos" in normalized_label:
-        return {
-            "happy": score,
-            "sad": 0.0,
-            "anger": 0.0,
-            "anxiety": 0.0,
-        }
+    with torch.no_grad():
+        outputs = model(**encoded)
+        probabilities = torch.sigmoid(outputs.logits).squeeze(0).cpu().tolist()
 
-    return {
-        "happy": 0.0,
-        "sad": score * 0.5,
-        "anger": score * 0.2,
-        "anxiety": score * 0.3,
-    }
+    return {label: float(score) for label, score in zip(LABEL_COLUMNS, probabilities)}
 
 
 def ensure_emotion_results_table(db: Session) -> None:
@@ -65,15 +74,10 @@ def analyze_entry_nlp(db: Session, entry) -> EmotionResult:
         "anxiety": 0.0,
     }
 
-    if chunks:
-        classifier = get_classifier()
-
-        for chunk in chunks:
-            result = classifier(chunk)[0]
-            mapped_scores = _map_sentiment_to_emotions(result["label"], float(result["score"]))
-
-            for key, value in mapped_scores.items():
-                scores[key] = max(scores[key], value)
+    for chunk in chunks:
+        chunk_scores = predict_chunk_scores(chunk)
+        for key, value in chunk_scores.items():
+            scores[key] = max(scores[key], value)
 
     emotion = db.query(EmotionResult).filter(EmotionResult.entry_id == entry.id).first()
 
@@ -88,5 +92,4 @@ def analyze_entry_nlp(db: Session, entry) -> EmotionResult:
 
     db.commit()
     db.refresh(emotion)
-
     return emotion
