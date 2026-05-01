@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -7,8 +7,8 @@ from app.schemas.ai import EntryAnalysisResponse
 from app.services.emotion_service import analyze_entry_nlp
 from app.services.recommendation_service import generate_recommendation
 from app.services.stress_model_service import predict_stress, predict_stress_batch
-from app.schemas.entry import EntryCreate, EntryResponse
-from app.services.entry_service import create_entry, get_all_entries, delete_entry
+from app.schemas.entry import EntryCreate, EntryResponse, EntryUpdate
+from app.services.entry_service import create_entry, get_all_entries, delete_entry, update_entry
 router = APIRouter()
 
 
@@ -46,6 +46,19 @@ def delete_entry_endpoint(id: int, db: Session = Depends(get_db)):
     return {"message": "Entry deleted"}
 
 
+@router.put("/entries/{id}", response_model=EntryResponse)
+def update_entry_endpoint(
+    id: int,
+    entry: EntryUpdate = Body(...),
+    db: Session = Depends(get_db)
+):
+    updated_entry = update_entry(db, id, entry)
+
+    if not updated_entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
+    return updated_entry
+
 
 @router.post("/entries/{id}/analyze", response_model=EntryAnalysisResponse)
 def analyze_entry(id: int, db: Session = Depends(get_db)):
@@ -81,3 +94,4 @@ def analyze_all(db: Session = Depends(get_db)):
         results.append(build_analysis_response(entry, emotion, stress, recommendations))
 
     return results
+
