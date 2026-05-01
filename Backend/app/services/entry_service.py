@@ -31,3 +31,21 @@ def delete_entry(db: Session, entry_id: int):
     db.commit()
 
     return entry
+
+
+
+def update_entry(db: Session, entry_id: int, entry_data):
+    entry = db.query(DailyEntry).filter(DailyEntry.id == entry_id).first()
+
+    if not entry:
+        return None
+
+    update_data = entry_data.dict(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(entry, key, value)
+
+    db.commit()
+    db.refresh(entry)
+
+    return entry
