@@ -21,7 +21,7 @@ from app.schemas.connection import (
     IncomingRequestResponse
 )
 
-from app.services.auth_services import get_current_user
+from app.core.security import get_current_user
 from app.models.user import User
 
 
