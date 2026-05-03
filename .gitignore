@@ -215,3 +215,9 @@ Backend/moodtrack.db
 Backend/models/
 
 Backend/models/emotion_model/checkpoint-*/
+
+
+node_modules
+dist
+dist-ssr
+*.local
