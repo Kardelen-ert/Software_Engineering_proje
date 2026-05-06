@@ -1,228 +1,207 @@
+
+import React from "react";
 import { useEffect, useState } from "react";
 import "./weeklyanalysis.css";
+import { Line, Doughnut } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Tooltip,
+  Legend
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Tooltip,
+  Legend
+);
 
 export default function WeeklyAnalysis() {
-
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    loadChart();
+    loadData();
   }, []);
 
-  async function loadChart() {
+  async function loadData() {
     try {
       const res = await fetch("http://127.0.0.1:8000/analysis/weekly");
       const json = await res.json();
-
-      console.log("API DATA:", json);
-
+      console.log(json);
       setData(json);
-
-      updateBars(json);
-      updateStress(json);
-      updateAdvice(json);
-      drawChart(json);
-
     } catch (err) {
-      console.error("API ERROR:", err);
+      console.error(err);
     }
   }
 
-  function updateBars(data) {
-    const emotions = data.weeklyEmotions;
+  if (!data) return <div className="loading">Yükleniyor...</div>;
 
-    const avg = (arr) =>
-      arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+  const emotions = data.weeklyEmotions;
 
-    const happy = avg(emotions.happy);
-    const sad = avg(emotions.sad);
-    const anxiety = avg(emotions.anxiety);
-    const anger = avg(emotions.anger);
+  const avg = (arr) =>
+    arr.length
+      ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length)
+      : 0;
 
-    setBar("happyBar", "happyText", happy);
-    setBar("sadBar", "sadText", sad);
-    setBar("anxietyBar", "anxietyText", anxiety);
-    setBar("angerBar", "angerText", anger);
-  }
+  // 🎯 DOUGHNUT
+  const doughnutData = {
+    labels: ["Mutluluk", "Üzgünlük", "Kaygı", "Öfke"],
+    datasets: [
+      {
+        data: [
+          avg(emotions.happy),
+          avg(emotions.sad),
+          avg(emotions.anxiety),
+          avg(emotions.anger)
+        ],
+        backgroundColor: [
+          "#A8E6CF",
+          "#FF8B94",
+          "#FFD3B6",
+          "#FFAAA5"
+        ],
+        borderWidth: 0
+      }
+    ]
+  };
 
-  function setBar(barId, textId, value) {
-    const bar = document.getElementById(barId);
-    const text = document.getElementById(textId);
+  // 📈 LINE
+  const lineData = {
+    labels: ["Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"],
+    datasets: [
+      {
+        label: "Mutluluk",
+        data: emotions.happy,
+        borderColor: "#A8E6CF",
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        tension: 0.4
+      },
+      {
+        label: "Üzgünlük",
+        data: emotions.sad,
+        borderColor: "#FF8B94",
+        pointRadius: 5,
+        tension: 0.4
+      },
+      {
+        label: "Kaygı",
+        data: emotions.anxiety,
+        borderColor: "#FFD3B6",
+        pointRadius: 5,
+        tension: 0.4
+      },
+      {
+        label: "Öfke",
+        data: emotions.anger,
+        borderColor: "#FFAAA5",
+        pointRadius: 5,
+        tension: 0.4
+      }
+    ]
+  };
 
-    if (bar) bar.style.width = value + "%";
-    if (text) text.innerText = value + "%";
-  }
+  const options = {
+    plugins: {
+      tooltip: {
+        backgroundColor: "#fff",
+        titleColor: "#333",
+        bodyColor: "#555",
+        borderColor: "#e0e0e0",
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 8,
+        displayColors:true,
 
-  function updateStress(data) {
-    const el = document.getElementById("stressValue");
-    if (el) el.innerText = `${data.stressLevel} / 10`;
-  }
-
-  function updateAdvice(data) {
-    const el = document.getElementById("adviceText");
-
-    if (!el) return;
-
-    if (data.suggestions && data.suggestions.length > 0) {
-      el.innerText = data.suggestions.join(" ");
-    } else {
-      el.innerText = "Şu an öneri yok.";
-    }
-  }
-
-  function drawChart(data) {
-    const canvas = document.getElementById("trendChart");
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
-    const w = canvas.width;
-    const h = canvas.height;
-    const padding = 40;
-
-    const emotions = data.weeklyEmotions;
-    const stress = data.weeklyStress;
-
-    const colors = {
-      happy: "#A8E6CF",
-      sad: "#B8D8E3",
-      anxiety: "#FFE0B2",
-      anger: "#FFCDD2",
-      stress: "#C5E1A5"
-    };
-
-    function drawLine(values, color) {
-      if (!values || values.length === 0) return;
-
-      const stepX = (w - padding * 2) / (values.length - 1);
-
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-
-      values.forEach((val, i) => {
-        const x = padding + i * stepX;
-        const y = h - padding - (val / 100) * (h - padding * 2);
-
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-
-      ctx.stroke();
-    }
-
-    function drawDots(values, color) {
-      if (!values) return;
-
-      const stepX = (w - padding * 2) / (values.length - 1);
-
-      values.forEach((val, i) => {
-        const x = padding + i * stepX;
-        const y = h - padding - (val / 100) * (h - padding * 2);
-
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-      });
-    }
-
-    function drawGrid() {
-      ctx.strokeStyle = "rgba(120,140,130,0.2)";
-      ctx.lineWidth = 1;
-
-      for (let i = 0; i <= 5; i++) {
-        let y = padding + ((h - padding * 2) / 5) * i;
-
-        ctx.beginPath();
-        ctx.moveTo(padding, y);
-        ctx.lineTo(w - padding, y);
-        ctx.stroke();
+        callbacks:{
+          label:function(context){
+            return `✨ ${context.dataset.label}: ${context.raw}%`;
+          }
+        }
+      },
+      legend: {
+        position: "top"
       }
     }
-
-    ctx.clearRect(0, 0, w, h);
-    drawGrid();
-
-    drawLine(emotions.happy, colors.happy);
-    drawDots(emotions.happy, colors.happy);
-
-    drawLine(emotions.sad, colors.sad);
-    drawDots(emotions.sad, colors.sad);
-
-    drawLine(emotions.anxiety, colors.anxiety);
-    drawDots(emotions.anxiety, colors.anxiety);
-
-    drawLine(emotions.anger, colors.anger);
-    drawDots(emotions.anger, colors.anger);
-
-    drawLine(stress, colors.stress);
-    drawDots(stress, colors.stress);
-  }
+  };
 
   return (
     <div className="container">
 
-      <header>
-        <h1>🌿 Ruh Hali Analizi</h1>
-        <button onClick={loadChart}>Analiz Et</button>
+      {/* HEADER */}
+      <header className="header">
+        <div>
+          <h1>☁️ Mood Analysis</h1>
+          <p className="subtitle">Dashboard / Mood Analysis</p>
+        </div>
+
+        <div className="top-right">
+          <span>🔔</span>
+          <span>👩🏻</span>
+        </div>
       </header>
 
+      {/* TABS */}
+      <div className="tabs">
+        <button>Day</button>
+        <button className="active">Week</button>
+        <button>Month</button>
+        <button>Year</button>
+      </div>
+
+      {/* TOP GRID */}
       <div className="grid">
 
-        {/* DUYGULAR */}
+        {/* DOUGHNUT + LEGEND */}
+        <div className="card big">
+          <h2>Mood Analysis</h2>
+
+          <div className="doughnut-wrapper">
+             <Doughnut data={doughnutData} />
+               
+
+            <div className="legend">
+              <p>😊 {avg(emotions.happy)}% Mutlu</p>
+              <p>😢 {avg(emotions.sad)}% Üzgün</p>
+              <p>😰 {avg(emotions.anxiety)}% Kaygı</p>
+              <p>😡 {avg(emotions.anger)}% Öfke</p>
+            </div>
+          </div>
+
+          <div className="info-box">
+            💡 Ruh halin genel olarak dengeli görünüyor.
+          </div>
+        </div>
+
+        {/* LINE CHART */}
         <div className="card">
-          <h2>Duygu Dağılımı</h2>
-
-          <div className="bar-group">
-            <label>Üzgünlük</label>
-            <div className="bar"><div id="sadBar"></div></div>
-            <span id="sadText">0%</span>
-          </div>
-
-          <div className="bar-group">
-            <label>Kaygı</label>
-            <div className="bar"><div id="anxietyBar"></div></div>
-            <span id="anxietyText">0%</span>
-          </div>
-
-          <div className="bar-group">
-            <label>Öfke</label>
-            <div className="bar"><div id="angerBar"></div></div>
-            <span id="angerText">0%</span>
-          </div>
-
-          <div className="bar-group">
-            <label>Mutluluk</label>
-            <div className="bar"><div id="happyBar"></div></div>
-            <span id="happyText">0%</span>
-          </div>
+          <h2>Mood Trends</h2>
+          <Line data={lineData} options={options} />
         </div>
-
-        {/* STRES */}
-        <div className="card">
-          <h2>Stres Seviyesi</h2>
-          <div className="stress-number" id="stressValue">0 / 10</div>
-        </div>
-
-        {/* AI */}
-        <div className="card full">
-          <h2>AI Tavsiyesi</h2>
-          <p id="adviceText">Analiz Et butonuna bas</p>
-        </div>
-
-        {/* CHART */}
-        <div className="card full">
-          <h2>Haftalık Ruh Hali Grafiği</h2>
-          <div className="chart">
-            <canvas id="trendChart"></canvas>
-          </div>
-        </div>
-
       </div>
+
+      {/* AI */}
+      <div className="card ai">
+        <h2>✨ Insights & Advice</h2>
+        <p>{data.suggestions?.join(" ") || "Harika gidiyorsun 💖"}</p>
+      </div>
+
+      {/* NAVBAR */}
+      <div className="navbar">
+        <span>🏠 Home</span>
+        <span>📖 Journal</span>
+        <span>👥 Friends</span>
+        <span>👤 Profile</span>
+      </div>
+
     </div>
   );
 }

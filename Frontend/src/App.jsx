@@ -1,5 +1,9 @@
-import DailySection from "./pages/DailySection/DailySection";
+import React from "react";
+import AppRoutes from "./routes/AppRoutes";
+
 
 export default function App() {
-  return <DailySection />;
+  return <AppRoutes />;
 }
+
+
