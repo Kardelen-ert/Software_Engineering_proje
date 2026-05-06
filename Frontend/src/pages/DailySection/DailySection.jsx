@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./DailySection.css";
 
 const API_URL = "http://127.0.0.1:8000";
@@ -7,32 +7,32 @@ const PROFILE_KEY = "moodtrack-profile-habits";
 
 const baseHabitGroups = [
   {
-    title: "Saglik",
-    description: "Bedene iyi gelen gunluk hedefler",
+    title: "Sağlık",
+    description: "Bedene iyi gelen günlük hedefler",
     habits: [
-      { name: "Su ictim", category: "Saglik", icon: "Su", theme: "theme-water", description: "Gun icinde su hedefimi tamamladim." },
-      { name: "Spor yaptim", category: "Saglik", icon: "Spor", theme: "theme-move", description: "Hareket ederek enerjimi yukselttim." },
-      { name: "Erken uyudum", category: "Saglik", icon: "Uyku", theme: "theme-sleep", description: "Dinlenmek icin uyku duzenimi korudum." }
+      { name: "Su içtim", category: "Sağlık", icon: "Su", theme: "theme-water", description: "Gün içinde su hedefimi tamamladım." },
+      { name: "Spor yaptım", category: "Sağlık", icon: "Spor", theme: "theme-move", description: "Hareket ederek enerjimi yükselttim." },
+      { name: "Erken uyudum", category: "Sağlık", icon: "Uyku", theme: "theme-sleep", description: "Dinlenmek için uyku düzenimi korudum." }
     ]
   },
   {
     title: "Zihin",
-    description: "Ruh halini sakinlestiren kucuk pratikler",
+    description: "Ruh halini sakinleştiren küçük pratikler",
     habits: [
-      { name: "Meditasyon yaptim", category: "Zihin", icon: "Nefes", theme: "theme-focus", description: "Biraz durup nefesime odaklandim." },
-      { name: "Kitap okudum", category: "Zihin", icon: "Kitap", theme: "theme-book", description: "Zihnimi besleyen bir okuma yaptim." }
+      { name: "Meditasyon yaptım", category: "Zihin", icon: "Nefes", theme: "theme-focus", description: "Biraz durup nefesime odaklandım." },
+      { name: "Kitap okudum", category: "Zihin", icon: "Kitap", theme: "theme-book", description: "Zihnimi besleyen bir okuma yaptım." }
     ]
   },
   {
-    title: "Uretkenlik",
-    description: "Gunu daha verimli hissettiren adimlar",
+    title: "Üretkenlik",
+    description: "Günü daha verimli hissettiren adımlar",
     habits: [
-      { name: "Ders calistim", category: "Uretkenlik", icon: "Not", theme: "theme-study", description: "Odaklanip hedefim icin emek verdim." }
+      { name: "Ders çalıştım", category: "Üretkenlik", icon: "Not", theme: "theme-study", description: "Odaklanıp hedefim için emek verdim." }
     ]
   }
 ];
 
-const moodOptions = ["Mutlu", "Uzgun", "Kaygili", "Ofkeli"];
+const moodOptions = ["Mutlu", "Üzgün", "Kaygılı", "Öfkeli"];
 
 const initialForm = {
   text: "",
@@ -75,10 +75,11 @@ export default function DailySection() {
     ...baseHabitGroups,
     {
       title: "Kisisel Kartlarin",
-      description: "Profiline ekledigin aliskanliklar burada gorunur",
+      title: "Kişisel Kartların",
+      description: "Profiline eklediğin alışkanlıklar burada görünür",
       habits: profileHabits.map((habit) => ({
         ...habit,
-        description: "Bu aliskanlik profilinde kayitli ve her gun tekrar secilebilir."
+        description: "Bu alışkanlık profilinde kayıtlı ve her gün tekrar seçilebilir."
       }))
     }
   ];
@@ -116,20 +117,20 @@ export default function DailySection() {
 
     if (!name) {
       setEntryMessageType("error");
-      setEntryMessage("Once eklemek istedigin aliskanligi yaz.");
+      setEntryMessage("Önce eklemek istediğin alışkanlığı yaz.");
       return;
     }
 
     const exists = profileHabits.some((habit) => habit.name.toLowerCase() === name.toLowerCase());
     if (exists) {
       setEntryMessageType("error");
-      setEntryMessage("Bu aliskanlik zaten profilinde kayitli.");
+      setEntryMessage("Bu alışkanlık zaten profilinde kayıtlı.");
       return;
     }
 
     const nextHabits = [
       ...profileHabits,
-      { name, category: "Kisisel", icon: "Yildiz", theme: "theme-custom" }
+      { name, category: "Kişisel", icon: "Yıldız", theme: "theme-custom" }
     ];
 
     setProfileHabits(nextHabits);
@@ -144,13 +145,13 @@ export default function DailySection() {
 
     if (!form.mood) {
       setEntryMessageType("error");
-      setEntryMessage("Devam etmeden once bir duygu etiketi sec.");
+      setEntryMessage("Devam etmeden önce bir duygu etiketi seç.");
       return;
     }
 
     if (selectedHabits.length === 0) {
       setEntryMessageType("error");
-      setEntryMessage("En az bir aliskanlik sec veya kendi aliskanligini ekle.");
+      setEntryMessage("En az bir alışkanlık seç veya kendi alışkanlığını ekle.");
       return;
     }
 
@@ -174,7 +175,7 @@ export default function DailySection() {
     const missingHabit = selectedHabits.find((habit) => !habitStatuses[habit.name]?.status);
     if (missingHabit) {
       setHabitMessageType("error");
-      setHabitMessage(`Once "${missingHabit.name}" icin secim yap.`);
+      setHabitMessage(`Önce "${missingHabit.name}" için seçim yap.`);
       return;
     }
 
@@ -206,18 +207,18 @@ export default function DailySection() {
       });
 
       if (!response.ok) {
-        throw new Error("Gunluk kaydi gonderilemedi.");
+        throw new Error("Günlük kaydı gönderilemedi.");
       }
 
       saveLocalHistory(payload);
       await fetchEntries();
       resetFlow();
       setEntryMessageType("success");
-      setEntryMessage("Gunluk ve aliskanlik notlarin kaydedildi.");
+      setEntryMessage("Günlük ve alışkanlık notların kaydedildi.");
     } catch (error) {
       saveLocalHistory(payload);
       setHabitMessageType("error");
-      setHabitMessage(`Backend kaydi alinamadi ama aliskanliklar tarayicida saklandi: ${error.message}`);
+      setHabitMessage(`Backend kaydı alınamadı ama alışkanlıklar tarayıcıda saklandı: ${error.message}`);
       resetFlow({ keepStep: true, preserveMessage: true });
     } finally {
       setIsSaving(false);
@@ -271,19 +272,19 @@ export default function DailySection() {
     return (
       <>
         <div className="hero">
-          <span className="hero-badge">Gunluk planlayici</span>
-          <h1>Gunun nasil gectigini ve aliskanlik hedeflerini birlikte duzenleyelim.</h1>
+          <span className="hero-badge">Günlük planlayıcı</span>
+          <h1>Günün nasıl geçtiğini ve alışkanlık hedeflerini birlikte düzenleyelim.</h1>
           <p className="subtitle">
-            Bu alan artik kisiye ozel calisiyor. Ekledigin aliskanliklar profilinde kalir, istediginde tekrar secip gunluk takibini yapabilirsin.
+            Bu alan artık kişiye özel çalışıyor. Eklediğin alışkanlıklar profilinde kalır, istediğinde tekrar seçip günlük takibini yapabilirsin.
           </p>
         </div>
 
         <form className="stack-lg" onSubmit={submitEntry}>
           <div>
-            <label htmlFor="journal">Gunluk Metin</label>
+            <label htmlFor="journal">Günlük Metin</label>
             <textarea
               id="journal"
-              placeholder="Bugun neler oldu, nasil hissediyorsun?"
+              placeholder="Bugün neler oldu, nasıl hissediyorsun?"
               required
               value={form.text}
               onChange={(event) => updateForm("text", event.target.value)}
@@ -307,7 +308,7 @@ export default function DailySection() {
           </div>
 
           <div>
-            <label htmlFor="stress">Duygu / Stres Yogunlugu: <span>{form.stress_self}</span></label>
+            <label htmlFor="stress">Duygu / Stres Yoğunluğu: <span>{form.stress_self}</span></label>
             <input
               id="stress"
               type="range"
@@ -320,7 +321,7 @@ export default function DailySection() {
 
           <div className="input-group">
             <div>
-              <label htmlFor="water">Su Miktari / Litre</label>
+              <label htmlFor="water">Su Miktarı / Litre</label>
               <input
                 id="water"
                 type="number"
@@ -352,31 +353,31 @@ export default function DailySection() {
           <section className="habit-builder">
             <div className="habit-builder-top">
               <div className="section-heading">
-                <h2>Aliskanliklarini Sec</h2>
-                <p>Hazir kartlardan sec, kendi kartini ekle ve profilinde sakla.</p>
+                <h2>Alışkanlıklarını Seç</h2>
+                <p>Hazır kartlardan seç, kendi kartını ekle ve profilinde sakla.</p>
               </div>
 
               <div className="habit-stats">
                 <div className="habit-stat-card">
                   <strong>{selectedHabits.length}</strong>
-                  <span>Bugun secilen</span>
+                  <span>Bugün seçilen</span>
                 </div>
                 <div className="habit-stat-card">
                   <strong>{profileHabits.length}</strong>
-                  <span>Profilde kayitli</span>
+                  <span>Profilde kayıtlı</span>
                 </div>
               </div>
             </div>
 
             <section className="profile-panel">
               <div className="selected-header">
-                <h3>Kisisel Profil Aliskanliklarin</h3>
-                <span className="selected-badge">{profileHabits.length} kayit</span>
+                <h3>Kişisel Profil Alışkanlıkların</h3>
+                <span className="selected-badge">{profileHabits.length} kayıt</span>
               </div>
-              <p className="profile-copy">Buraya ekledigin aliskanliklar sonraki girislerinde de burada kalir.</p>
+              <p className="profile-copy">Buraya eklediğin alışkanlıklar sonraki girişlerinde de burada kalır.</p>
               <ul className="selected-list">
                 {profileHabits.length === 0 ? (
-                  <li className="empty-state">Henuz profiline ozel aliskanlik eklenmedi.</li>
+                  <li className="empty-state">Henüz profiline özel alışkanlık eklenmedi.</li>
                 ) : (
                   profileHabits.map((habit) => (
                     <li key={habit.name} className="selected-item">
@@ -396,7 +397,7 @@ export default function DailySection() {
                 </div>
                 <div className="habit-options">
                   {group.habits.length === 0 ? (
-                    <div className="empty-custom-habits">Henuz profiline ozel kart yok.</div>
+                    <div className="empty-custom-habits">Henüz profiline özel kart yok.</div>
                   ) : (
                     group.habits.map((habit) => {
                       const isActive = selectedHabits.some((item) => item.name === habit.name);
@@ -410,7 +411,7 @@ export default function DailySection() {
                           <span className="habit-icon">{habit.icon}</span>
                           <span className="habit-title">{habit.name}</span>
                           <span className="habit-desc">{habit.description}</span>
-                          <span className="habit-check">Secildi</span>
+                          <span className="habit-check">Seçildi</span>
                         </button>
                       );
                     })
@@ -421,12 +422,12 @@ export default function DailySection() {
 
             <div className="custom-habit-panel">
               <div className="custom-habit-copy">
-                <h3>Kendi aliskanligini olustur</h3>
+                <h3>Kendi alışkanlığını oluştur</h3>
               </div>
               <div className="custom-habit-row">
                 <input
                   type="text"
-                  placeholder="Ornek: 20 dakika yurudum"
+                  placeholder="Örnek: 20 dakika yürüdüm"
                   value={customHabit}
                   onChange={(event) => setCustomHabit(event.target.value)}
                 />
@@ -438,12 +439,12 @@ export default function DailySection() {
 
             <div className="selected-habits-box">
               <div className="selected-header">
-                <h3>Bugun Secilen Aliskanliklar</h3>
-                <span className="selected-badge">{selectedHabits.length} secim</span>
+                <h3>Bugün Seçilen Alışkanlıklar</h3>
+                <span className="selected-badge">{selectedHabits.length} seçim</span>
               </div>
               <ul className="selected-list">
                 {selectedHabits.length === 0 ? (
-                  <li className="empty-state">Henuz aliskanlik secilmedi.</li>
+                  <li className="empty-state">Henüz alışkanlık seçilmedi.</li>
                 ) : (
                   selectedHabits.map((habit) => (
                     <li key={habit.name} className="selected-item">
@@ -456,7 +457,7 @@ export default function DailySection() {
             </div>
           </section>
 
-          <button type="submit" className="save-btn">Aliskanlik sayfasina gec</button>
+          <button type="submit" className="save-btn">Alışkanlık sayfasına geç</button>
         </form>
 
         <p className="message" style={{ color: entryMessageType === "success" ? "#15803d" : "#dc2626" }}>
@@ -470,29 +471,29 @@ export default function DailySection() {
     return (
       <>
         <div className="hero">
-          <span className="hero-badge">Aliskanlik takibi</span>
-          <h1>Sectigin aliskanliklari simdi tek tek isaretleyebilirsin.</h1>
+          <span className="hero-badge">Alışkanlık takibi</span>
+          <h1>Seçtiğin alışkanlıkları şimdi tek tek işaretleyebilirsin.</h1>
         </div>
 
         <section className="summary-card">
-          <h2>Bugunku Ozet</h2>
+          <h2>Bugünkü Özet</h2>
           <p>{form.text}</p>
           <div className="summary-grid">
             <div className="summary-chip"><strong>Duygu</strong><span>{form.mood}</span></div>
             <div className="summary-chip"><strong>Stres</strong><span>{form.stress_self}/10</span></div>
             <div className="summary-chip"><strong>Su</strong><span>{form.water_liters} litre</span></div>
             <div className="summary-chip"><strong>Uyku</strong><span>{form.sleep_hours} saat</span></div>
-            <div className="summary-chip"><strong>Aliskanlik sayisi</strong><span>{selectedHabits.length}</span></div>
+            <div className="summary-chip"><strong>Alışkanlık sayısı</strong><span>{selectedHabits.length}</span></div>
           </div>
         </section>
 
         <section className="progress-panel">
           <div className="progress-copy">
-            <h2>Bugunku ilerlemen</h2>
+            <h2>Bugünkü ilerlemen</h2>
             <p>
               {progress.total === 0
-                ? "Henuz secim yapilmadi."
-                : `${progress.total} aliskanliktan ${progress.completed} tanesinde secim yapildi.`}
+                ? "Henüz seçim yapılmadı."
+                : `${progress.total} alışkanlıktan ${progress.completed} tanesinde seçim yapıldı.`}
             </p>
           </div>
           <div className="progress-bar">
@@ -502,8 +503,8 @@ export default function DailySection() {
 
         <section className="stack-lg">
           <div className="section-heading">
-            <h2>Bugunku Aliskanliklarin</h2>
-            <p>Tum kartlarda tik veya carpi secildiginde kaydetme akisi tamamlanir.</p>
+            <h2>Bugünkü Alışkanlıkların</h2>
+            <p>Tüm kartlarda tik veya çarpı seçildiğinde kaydetme akışı tamamlanır.</p>
           </div>
 
           <div className="habit-tracker-list">
@@ -517,7 +518,7 @@ export default function DailySection() {
                   <div className="tracker-top">
                     <div>
                       <h3>{habit.name}</h3>
-                      <p>Bugun bu aliskanlik icin tik veya carpi sec.</p>
+                      <p>Bugün bu alışkanlık için tik veya çarpı seç.</p>
                     </div>
                     <span className="tracker-meta">{habit.category}</span>
                   </div>
@@ -527,23 +528,27 @@ export default function DailySection() {
                       type="button"
                       className={`status-btn done${state.status === "done" ? " active" : ""}`}
                       onClick={() => updateHabitStatus(habit.name, "status", "done")}
+                      aria-label="Yapıldı"
+                      title="Yapıldı"
                     >
-                      Yapildi
+                      ✓
                     </button>
                     <button
                       type="button"
                       className={`status-btn not-done${state.status === "not-done" ? " active" : ""}`}
                       onClick={() => updateHabitStatus(habit.name, "status", "not-done")}
+                      aria-label="Yapılmadı"
+                      title="Yapılmadı"
                     >
-                      Yapilmadi
+                      ✕
                     </button>
                   </div>
 
                   <div>
-                    <label htmlFor={`note-${index}`}>Kucuk not</label>
+                    <label htmlFor={`note-${index}`}>Küçük not</label>
                     <textarea
                       id={`note-${index}`}
-                      placeholder="Kendine kisa bir not birakabilirsin..."
+                      placeholder="Kendine kısa bir not bırakabilirsin..."
                       value={state.note}
                       onChange={(event) => updateHabitStatus(habit.name, "note", event.target.value)}
                     />
@@ -555,10 +560,10 @@ export default function DailySection() {
 
           <div className="page-actions">
             <button type="button" className="secondary-btn" onClick={() => setStep("entry")}>
-              Geri don
+              Geri dön
             </button>
             <button type="button" className="save-btn" onClick={handleSave} disabled={isSaving}>
-              {isSaving ? "Kaydediliyor..." : "Gunlugu kaydet"}
+              {isSaving ? "Kaydediliyor..." : "Günlüğü kaydet"}
             </button>
           </div>
         </section>
@@ -569,12 +574,12 @@ export default function DailySection() {
 
         <section className="entries-section">
           <div className="section-heading">
-            <h2>Son Kayitlar</h2>
-            <p>Kaydedilen gunluk bilgileri burada gorunsun.</p>
+            <h2>Son Kayıtlar</h2>
+            <p>Kaydedilen günlük bilgileri burada görünsün.</p>
           </div>
           <div className="entries-grid">
             {entries.length === 0 ? (
-              <p className="empty-state">Henuz kayit yok veya backend erisilemiyor.</p>
+              <p className="empty-state">Henüz kayıt yok veya backend erişilemiyor.</p>
             ) : (
               entries.map((entry, index) => (
                 <article key={`${entry.text}-${index}`} className="entry-card">
@@ -590,11 +595,11 @@ export default function DailySection() {
 
         <section className="entries-section">
           <div className="section-heading">
-            <h2>Kaydedilen Aliskanlik Notlari</h2>
+            <h2>Kaydedilen Alışkanlık Notları</h2>
           </div>
           <div className="entries-grid">
             {history.length === 0 ? (
-              <p className="empty-state">Henuz kaydedilmis aliskanlik notu yok.</p>
+              <p className="empty-state">Henüz kaydedilmiş alışkanlık notu yok.</p>
             ) : (
               history.map((item) => (
                 <article key={item.saved_at} className="entry-card">
@@ -603,7 +608,7 @@ export default function DailySection() {
                   <ul>
                     {item.habits.map((habit) => (
                       <li key={`${item.saved_at}-${habit.name}`}>
-                        <strong>{habit.name}:</strong> {habit.status === "done" ? "Yapildi" : "Yapilmadi"}
+                        <strong>{habit.name}:</strong> {habit.status === "done" ? "Yapıldı" : "Yapılmadı"}
                         {habit.note ? ` - ${habit.note}` : ""}
                       </li>
                     ))}

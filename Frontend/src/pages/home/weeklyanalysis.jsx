@@ -1,18 +1,16 @@
-
-import React from "react";
-import { useEffect, useState } from "react";
-import "./weeklyanalysis.css";
-import { Line, Doughnut } from "react-chartjs-2";
+import React, { useEffect, useState } from "react";
+import { Doughnut, Line } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
+  ArcElement,
   CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LineElement,
   LinearScale,
   PointElement,
-  LineElement,
-  ArcElement,
-  Tooltip,
-  Legend
+  Tooltip
 } from "chart.js";
+import "./weeklyanalysis.css";
 
 ChartJS.register(
   CategoryScale,
@@ -24,8 +22,11 @@ ChartJS.register(
   Legend
 );
 
+const API_URL = "http://127.0.0.1:8000/analysis/weekly";
+
 export default function WeeklyAnalysis() {
   const [data, setData] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     loadData();
@@ -33,53 +34,57 @@ export default function WeeklyAnalysis() {
 
   async function loadData() {
     try {
-      const res = await fetch("http://127.0.0.1:8000/analysis/weekly");
-      const json = await res.json();
-      console.log(json);
+      setError("");
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error("Analiz verisi alınamadı.");
+      }
+
+      const json = await response.json();
       setData(json);
     } catch (err) {
       console.error(err);
+      setError(err.message || "Analiz yüklenemedi.");
     }
   }
 
-  if (!data) return <div className="loading">Yükleniyor...</div>;
+  if (error) {
+    return <div className="loading">{error}</div>;
+  }
 
-  const emotions = data.weeklyEmotions;
+  if (!data) {
+    return <div className="loading">Yükleniyor...</div>;
+  }
+
+  const emotions = data.weeklyEmotions || {};
+  const happy = Array.isArray(emotions.happy) ? emotions.happy : [];
+  const sad = Array.isArray(emotions.sad) ? emotions.sad : [];
+  const anxiety = Array.isArray(emotions.anxiety) ? emotions.anxiety : [];
+  const anger = Array.isArray(emotions.anger) ? emotions.anger : [];
 
   const avg = (arr) =>
-    arr.length
-      ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length)
+    Array.isArray(arr) && arr.length
+      ? Math.round(arr.reduce((sum, value) => sum + value, 0) / arr.length)
       : 0;
 
-  // 🎯 DOUGHNUT
   const doughnutData = {
     labels: ["Mutluluk", "Üzgünlük", "Kaygı", "Öfke"],
     datasets: [
       {
-        data: [
-          avg(emotions.happy),
-          avg(emotions.sad),
-          avg(emotions.anxiety),
-          avg(emotions.anger)
-        ],
-        backgroundColor: [
-          "#A8E6CF",
-          "#FF8B94",
-          "#FFD3B6",
-          "#FFAAA5"
-        ],
+        data: [avg(happy), avg(sad), avg(anxiety), avg(anger)],
+        backgroundColor: ["#A8E6CF", "#FF8B94", "#FFD3B6", "#FFAAA5"],
         borderWidth: 0
       }
     ]
   };
 
-  // 📈 LINE
   const lineData = {
     labels: ["Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"],
     datasets: [
       {
         label: "Mutluluk",
-        data: emotions.happy,
+        data: happy,
         borderColor: "#A8E6CF",
         pointRadius: 5,
         pointHoverRadius: 7,
@@ -87,21 +92,21 @@ export default function WeeklyAnalysis() {
       },
       {
         label: "Üzgünlük",
-        data: emotions.sad,
+        data: sad,
         borderColor: "#FF8B94",
         pointRadius: 5,
         tension: 0.4
       },
       {
         label: "Kaygı",
-        data: emotions.anxiety,
+        data: anxiety,
         borderColor: "#FFD3B6",
         pointRadius: 5,
         tension: 0.4
       },
       {
         label: "Öfke",
-        data: emotions.anger,
+        data: anger,
         borderColor: "#FFAAA5",
         pointRadius: 5,
         tension: 0.4
@@ -119,11 +124,10 @@ export default function WeeklyAnalysis() {
         borderWidth: 1,
         padding: 10,
         cornerRadius: 8,
-        displayColors:true,
-
-        callbacks:{
-          label:function(context){
-            return `✨ ${context.dataset.label}: ${context.raw}%`;
+        displayColors: true,
+        callbacks: {
+          label(context) {
+            return `${context.dataset.label}: ${context.raw}%`;
           }
         }
       },
@@ -135,21 +139,18 @@ export default function WeeklyAnalysis() {
 
   return (
     <div className="container">
-
-      {/* HEADER */}
       <header className="header">
         <div>
-          <h1>☁️ Mood Analysis</h1>
+          <h1>Mood Analysis</h1>
           <p className="subtitle">Dashboard / Mood Analysis</p>
         </div>
 
         <div className="top-right">
-          <span>🔔</span>
-          <span>👩🏻</span>
+          <span>Bildirim</span>
+          <span>Profil</span>
         </div>
       </header>
 
-      {/* TABS */}
       <div className="tabs">
         <button>Day</button>
         <button className="active">Week</button>
@@ -157,51 +158,43 @@ export default function WeeklyAnalysis() {
         <button>Year</button>
       </div>
 
-      {/* TOP GRID */}
       <div className="grid">
-
-        {/* DOUGHNUT + LEGEND */}
         <div className="card big">
           <h2>Mood Analysis</h2>
 
           <div className="doughnut-wrapper">
-             <Doughnut data={doughnutData} />
-               
+            <Doughnut data={doughnutData} />
 
             <div className="legend">
-              <p>😊 {avg(emotions.happy)}% Mutlu</p>
-              <p>😢 {avg(emotions.sad)}% Üzgün</p>
-              <p>😰 {avg(emotions.anxiety)}% Kaygı</p>
-              <p>😡 {avg(emotions.anger)}% Öfke</p>
+              <p>{avg(happy)}% Mutlu</p>
+              <p>{avg(sad)}% Üzgün</p>
+              <p>{avg(anxiety)}% Kaygılı</p>
+              <p>{avg(anger)}% Öfkeli</p>
             </div>
           </div>
 
           <div className="info-box">
-            💡 Ruh halin genel olarak dengeli görünüyor.
+            Ruh halin genel olarak dengeli görünüyor.
           </div>
         </div>
 
-        {/* LINE CHART */}
         <div className="card">
           <h2>Mood Trends</h2>
           <Line data={lineData} options={options} />
         </div>
       </div>
 
-      {/* AI */}
       <div className="card ai">
-        <h2>✨ Insights & Advice</h2>
-        <p>{data.suggestions?.join(" ") || "Harika gidiyorsun 💖"}</p>
+        <h2>Insights & Advice</h2>
+        <p>{data.suggestions?.join(" ") || "Harika gidiyorsun."}</p>
       </div>
 
-      {/* NAVBAR */}
       <div className="navbar">
-        <span>🏠 Home</span>
-        <span>📖 Journal</span>
-        <span>👥 Friends</span>
-        <span>👤 Profile</span>
+        <span>Home</span>
+        <span>Journal</span>
+        <span>Friends</span>
+        <span>Profile</span>
       </div>
-
     </div>
   );
 }
