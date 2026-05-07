@@ -1,0 +1,175 @@
+/* Profile.css */
+.profile-dashboard {
+    display: flex;
+    min-height: 100vh;
+    margin: -8px; /* Tarayıcı varsayılan boşluğunu sıfırlar */
+    font-family: 'Poppins', sans-serif;
+    background-color: #fcfaf5; /* Sağ tarafın kağıt/krem arka planı */
+}
+
+/* Sol Taraf - Kimlik Paneli (Derin Yeşil ve Ahşap) */
+.profile-sidebar {
+    width: 320px;
+    background: linear-gradient(180deg, #00591b 0%, #012a0d 100%);
+    color: #fcfaf5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 30px;
+    border-right: 6px solid #3b6304 ; /* Ahşap tonu ayırıcı çizgi */
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+}
+
+.profile-avatar-large {
+    width: 120px;
+    height: 120px;
+    background-color: #86dc0d;
+    color: #fcfaf5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    font-family: 'Lora', serif;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.profile-sidebar h2 {
+    font-family: 'Lora', serif;
+    font-size: 26px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.profile-sidebar .bio-text {
+    font-size: 14px;
+    color: #b5c2b8;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: auto; /* İçeriği yukarı iter, butonu aşağı bırakır */
+}
+
+.btn-logout {
+    width: 100%;
+    padding: 12px;
+    margin-top: 40px;
+    background-color: transparent;
+    color: #e67e7e;
+    border: 1px solid #e67e7e;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+    background-color: #e67e7e;
+    color: #1e2520;
+}
+
+/* Sağ Taraf - Ayarlar ve Form Alanı */
+.profile-main {
+    flex: 1;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-header {
+    margin-bottom: 40px;
+}
+
+.main-header h1 {
+    font-family: 'Lora', serif;
+    font-size: 36px;
+    color: #2c362f;
+    margin-bottom: 8px;
+}
+
+.main-header p {
+    color: #777;
+    font-size: 15px;
+}
+
+/* Form Tasarımı */
+.profile-form-wide {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    max-width: 800px;
+}
+
+.form-row {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    flex: 1;
+}
+
+.input-group label {
+    display: block;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.input-group input, 
+.input-group textarea {
+    width: 100%;
+    padding: 14px 15px;
+    border: 1px solid #d1cec7;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #f7f6f2;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+.input-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.input-group input:focus,
+.input-group textarea:focus {
+    outline: none;
+    border-color: #6b4c3a;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(107, 76, 58, 0.1);
+}
+
+.btn-save {
+    padding: 14px 30px;
+    background-color: #2c362f;
+    color: #fcfaf5;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.btn-save:hover {
+    background-color: #1e2520;
+}
+
+.alert-msg {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-size: 14px;
+    background-color: #f2f7f4;
+    color: #538d6b;
+    border: 1px solid #dcf0e3;
+    max-width: 800px;
+}
