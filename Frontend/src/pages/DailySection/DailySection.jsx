@@ -74,7 +74,6 @@ export default function DailySection() {
   const allHabitGroups = [
     ...baseHabitGroups,
     {
-      title: "Kisisel Kartlarin",
       title: "Kişisel Kartların",
       description: "Profiline eklediğin alışkanlıklar burada görünür",
       habits: profileHabits.map((habit) => ({
