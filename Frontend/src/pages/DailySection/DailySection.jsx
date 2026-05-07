@@ -1,515 +1,624 @@
+import React, { useEffect, useState } from "react";
+import "./DailySection.css";
+
 const API_URL = "http://127.0.0.1:8000";
-const page = document.body.dataset.page;
-const DRAFT_KEY = "moodtrack-entry-draft";
 const HISTORY_KEY = "moodtrack-habit-history";
 const PROFILE_KEY = "moodtrack-profile-habits";
 
-if (page === "entry") {
-  setupEntryPage();
-}
+const baseHabitGroups = [
+  {
+    title: "Sağlık",
+    description: "Bedene iyi gelen günlük hedefler",
+    habits: [
+      { name: "Su içtim", category: "Sağlık", icon: "Su", theme: "theme-water", description: "Gün içinde su hedefimi tamamladım." },
+      { name: "Spor yaptım", category: "Sağlık", icon: "Spor", theme: "theme-move", description: "Hareket ederek enerjimi yükselttim." },
+      { name: "Erken uyudum", category: "Sağlık", icon: "Uyku", theme: "theme-sleep", description: "Dinlenmek için uyku düzenimi korudum." }
+    ]
+  },
+  {
+    title: "Zihin",
+    description: "Ruh halini sakinleştiren küçük pratikler",
+    habits: [
+      { name: "Meditasyon yaptım", category: "Zihin", icon: "Nefes", theme: "theme-focus", description: "Biraz durup nefesime odaklandım." },
+      { name: "Kitap okudum", category: "Zihin", icon: "Kitap", theme: "theme-book", description: "Zihnimi besleyen bir okuma yaptım." }
+    ]
+  },
+  {
+    title: "Üretkenlik",
+    description: "Günü daha verimli hissettiren adımlar",
+    habits: [
+      { name: "Ders çalıştım", category: "Üretkenlik", icon: "Not", theme: "theme-study", description: "Odaklanıp hedefim için emek verdim." }
+    ]
+  }
+];
 
-if (page === "habits") {
-  setupHabitsPage();
-}
+const moodOptions = ["Mutlu", "Üzgün", "Kaygılı", "Öfkeli"];
 
-function setupEntryPage() {
-  const form = document.querySelector("#entryForm");
-  const journalInput = document.querySelector("#journal");
-  const stressInput = document.querySelector("#stress");
-  const stressValue = document.querySelector("#stressValue");
-  const waterInput = document.querySelector("#water");
-  const sleepInput = document.querySelector("#sleep");
-  const moodButtons = document.querySelectorAll(".mood-btn");
-  const customHabitInput = document.querySelector("#customHabit");
-  const addHabitBtn = document.querySelector("#addHabitBtn");
-  const selectedHabitsList = document.querySelector("#selectedHabitsList");
-  const selectedHabitCount = document.querySelector("#selectedHabitCount");
-  const selectedHabitBadge = document.querySelector("#selectedHabitBadge");
-  const profileHabitsList = document.querySelector("#profileHabitsList");
-  const profileHabitCount = document.querySelector("#profileHabitCount");
-  const profileBadge = document.querySelector("#profileBadge");
-  const customHabitOptions = document.querySelector("#customHabitOptions");
-  const message = document.querySelector("#message");
+const initialForm = {
+  text: "",
+  mood: "",
+  water_liters: "",
+  sleep_hours: "",
+  stress_self: 5
+};
 
-  let selectedMood = "";
-  const selectedHabits = new Map();
-  let profileHabits = readProfileHabits();
+export default function DailySection() {
+  const [step, setStep] = useState("entry");
+  const [form, setForm] = useState(initialForm);
+  const [selectedHabits, setSelectedHabits] = useState([]);
+  const [profileHabits, setProfileHabits] = useState([]);
+  const [customHabit, setCustomHabit] = useState("");
+  const [habitStatuses, setHabitStatuses] = useState({});
+  const [entryMessage, setEntryMessage] = useState("");
+  const [entryMessageType, setEntryMessageType] = useState("success");
+  const [habitMessage, setHabitMessage] = useState("");
+  const [habitMessageType, setHabitMessageType] = useState("success");
+  const [entries, setEntries] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
-  renderCustomHabitCards(customHabitOptions, profileHabits);
-  bindHabitCardSelection(selectedHabits, selectedHabitsList, selectedHabitCount, selectedHabitBadge);
-  syncSelectedCardStates(selectedHabits);
-  renderProfileHabits(profileHabitsList, profileHabits, profileHabitCount, profileBadge);
+  useEffect(() => {
+    try {
+      setProfileHabits(JSON.parse(localStorage.getItem(PROFILE_KEY) || "[]"));
+      setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"));
+    } catch {
+      setProfileHabits([]);
+      setHistory([]);
+    }
+  }, []);
 
-  moodButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      moodButtons.forEach((btn) => btn.classList.remove("active"));
-      button.classList.add("active");
-      selectedMood = button.dataset.mood;
+  useEffect(() => {
+    fetchEntries();
+  }, []);
+
+  const allHabitGroups = [
+    ...baseHabitGroups,
+    {
+      title: "Kisisel Kartlarin",
+      title: "Kişisel Kartların",
+      description: "Profiline eklediğin alışkanlıklar burada görünür",
+      habits: profileHabits.map((habit) => ({
+        ...habit,
+        description: "Bu alışkanlık profilinde kayıtlı ve her gün tekrar seçilebilir."
+      }))
+    }
+  ];
+
+  const progress = {
+    total: selectedHabits.length,
+    completed: selectedHabits.filter((habit) => habitStatuses[habit.name]?.status).length,
+    percent: 0
+  };
+  progress.percent = progress.total === 0 ? 0 : Math.round((progress.completed / progress.total) * 100);
+
+  function updateForm(field, value) {
+    setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function toggleHabit(habit) {
+    setSelectedHabits((current) => {
+      const exists = current.some((item) => item.name === habit.name);
+      if (exists) {
+        const next = current.filter((item) => item.name !== habit.name);
+        setHabitStatuses((prev) => {
+          const clone = { ...prev };
+          delete clone[habit.name];
+          return clone;
+        });
+        return next;
+      }
+
+      return [...current, { name: habit.name, category: habit.category }];
     });
-  });
+  }
 
-  stressInput.addEventListener("input", () => {
-    stressValue.textContent = stressInput.value;
-  });
+  function addCustomHabit() {
+    const name = customHabit.trim();
 
-  addHabitBtn.addEventListener("click", () => {
-    const customHabit = customHabitInput.value.trim();
-
-    if (!customHabit) {
-      showMessage(message, "Önce eklemek istediğin alışkanlığı yaz.", "error");
+    if (!name) {
+      setEntryMessageType("error");
+      setEntryMessage("Önce eklemek istediğin alışkanlığı yaz.");
       return;
     }
 
-    const existsInProfile = profileHabits.some((habit) => habit.name.toLowerCase() === customHabit.toLowerCase());
-
-    if (existsInProfile) {
-      showMessage(message, "Bu alışkanlık zaten profilinde kayıtlı.", "error");
+    const exists = profileHabits.some((habit) => habit.name.toLowerCase() === name.toLowerCase());
+    if (exists) {
+      setEntryMessageType("error");
+      setEntryMessage("Bu alışkanlık zaten profilinde kayıtlı.");
       return;
     }
 
-    const newHabit = {
-      name: customHabit,
-      category: "Kişisel",
-      icon: "⭐",
-      theme: "theme-custom"
-    };
+    const nextHabits = [
+      ...profileHabits,
+      { name, category: "Kişisel", icon: "Yıldız", theme: "theme-custom" }
+    ];
 
-    profileHabits = [...profileHabits, newHabit];
-    saveProfileHabits(profileHabits);
-    customHabitInput.value = "";
-    renderCustomHabitCards(customHabitOptions, profileHabits);
-    bindHabitCardSelection(selectedHabits, selectedHabitsList, selectedHabitCount, selectedHabitBadge);
-    syncSelectedCardStates(selectedHabits);
-    renderProfileHabits(profileHabitsList, profileHabits, profileHabitCount, profileBadge);
-    showMessage(message, `"${customHabit}" profiline eklendi.`, "success");
-  });
+    setProfileHabits(nextHabits);
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(nextHabits));
+    setCustomHabit("");
+    setEntryMessageType("success");
+    setEntryMessage(`"${name}" profiline eklendi.`);
+  }
 
-  form.addEventListener("submit", (event) => {
+  function submitEntry(event) {
     event.preventDefault();
 
-    if (!selectedMood) {
-      showMessage(message, "Devam etmeden önce bir duygu etiketi seç.", "error");
+    if (!form.mood) {
+      setEntryMessageType("error");
+      setEntryMessage("Devam etmeden önce bir duygu etiketi seç.");
       return;
     }
 
-    if (selectedHabits.size === 0) {
-      showMessage(message, "En az bir alışkanlık seç veya kendi alışkanlığını profilene ekle.", "error");
+    if (selectedHabits.length === 0) {
+      setEntryMessageType("error");
+      setEntryMessage("En az bir alışkanlık seç veya kendi alışkanlığını ekle.");
       return;
     }
 
-    const draft = {
-      text: journalInput.value.trim(),
-      mood: selectedMood,
-      water_liters: Number(waterInput.value),
-      sleep_hours: Number(sleepInput.value),
-      stress_self: Number(stressInput.value),
-      habits: [...selectedHabits.entries()].map(([name, meta]) => ({
-        name,
-        category: meta.category,
-        status: "",
-        note: ""
+    setEntryMessage("");
+    setHabitMessage("");
+    setStep("habits");
+  }
+
+  function updateHabitStatus(name, field, value) {
+    setHabitStatuses((current) => ({
+      ...current,
+      [name]: {
+        status: current[name]?.status || "",
+        note: current[name]?.note || "",
+        [field]: value
+      }
+    }));
+  }
+
+  async function handleSave() {
+    const missingHabit = selectedHabits.find((habit) => !habitStatuses[habit.name]?.status);
+    if (missingHabit) {
+      setHabitMessageType("error");
+      setHabitMessage(`Önce "${missingHabit.name}" için seçim yap.`);
+      return;
+    }
+
+    const payload = {
+      text: form.text.trim(),
+      mood: form.mood,
+      water_liters: Number(form.water_liters),
+      sleep_hours: Number(form.sleep_hours),
+      stress_self: Number(form.stress_self),
+      habits: selectedHabits.map((habit) => ({
+        ...habit,
+        status: habitStatuses[habit.name]?.status || "",
+        note: habitStatuses[habit.name]?.note || ""
       }))
     };
 
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    window.location.href = "habits.html";
-  });
-
-  renderSelectedHabits(selectedHabitsList, selectedHabits);
-  updateSelectionStats(selectedHabits, selectedHabitCount, selectedHabitBadge);
-}
-
-function setupHabitsPage() {
-  const summary = document.querySelector("#dailySummary");
-  const trackerList = document.querySelector("#habitTrackerList");
-  const saveHabitsBtn = document.querySelector("#saveHabitsBtn");
-  const habitMessage = document.querySelector("#habitMessage");
-  const entriesList = document.querySelector("#entriesList");
-  const habitHistoryList = document.querySelector("#habitHistoryList");
-  const progressFill = document.querySelector("#progressFill");
-  const progressText = document.querySelector("#progressText");
-
-  const draft = readDraft();
-
-  if (!draft) {
-    summary.innerHTML = `
-      <h2>Önce günlük girişini tamamla</h2>
-      <p>Alışkanlık takibi için seçtiğin alışkanlıkları ilk sayfadan göndermen gerekiyor.</p>
-    `;
-    saveHabitsBtn.disabled = true;
-    trackerList.innerHTML = "";
-    getEntries(entriesList);
-    renderHabitHistory(habitHistoryList);
-    updateProgress([], progressFill, progressText);
-    return;
-  }
-
-  renderSummary(summary, draft);
-  renderHabitTrackers(trackerList, draft.habits, progressFill, progressText);
-  getEntries(entriesList);
-  renderHabitHistory(habitHistoryList);
-  updateProgress(draft.habits, progressFill, progressText);
-
-  saveHabitsBtn.addEventListener("click", async () => {
-    const incompleteHabit = draft.habits.find((habit) => !habit.status);
-
-    if (incompleteHabit) {
-      showMessage(habitMessage, `Önce "${incompleteHabit.name}" için birini seç.`, "error");
-      return;
-    }
+    setIsSaving(true);
 
     try {
-      await saveEntry(draft);
-      saveLocalHistory(draft);
-      sessionStorage.removeItem(DRAFT_KEY);
-      showMessage(habitMessage, "Günlük ve alışkanlık notların kaydedildi.", "success");
-      saveHabitsBtn.disabled = true;
-      getEntries(entriesList);
-      renderHabitHistory(habitHistoryList);
-    } catch (error) {
-      saveLocalHistory(draft);
-      showMessage(
-        habitMessage,
-        `Backend kaydı alınamadı ama alışkanlıkların tarayıcıda saklandı: ${error.message}`,
-        "error"
-      );
-      renderHabitHistory(habitHistoryList);
-    }
-  });
-}
+      const response = await fetch(`${API_URL}/entries`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: payload.text,
+          water_liters: payload.water_liters,
+          sleep_hours: payload.sleep_hours,
+          stress_self: payload.stress_self
+        })
+      });
 
-function bindHabitCardSelection(selectedHabits, selectedHabitsList, selectedHabitCount, selectedHabitBadge) {
-  const allCards = document.querySelectorAll(".habit-card");
-
-  allCards.forEach((card) => {
-    card.onclick = () => {
-      const habitName = card.dataset.habit;
-      const category = card.dataset.category || "Kişisel";
-
-      if (selectedHabits.has(habitName)) {
-        selectedHabits.delete(habitName);
-        card.classList.remove("active");
-      } else {
-        selectedHabits.set(habitName, { category });
-        card.classList.add("active");
+      if (!response.ok) {
+        throw new Error("Günlük kaydı gönderilemedi.");
       }
 
-      renderSelectedHabits(selectedHabitsList, selectedHabits);
-      updateSelectionStats(selectedHabits, selectedHabitCount, selectedHabitBadge);
-      syncSelectedCardStates(selectedHabits);
-    };
-  });
-}
-
-function syncSelectedCardStates(selectedHabits) {
-  document.querySelectorAll(".habit-card").forEach((card) => {
-    const habitName = card.dataset.habit;
-    card.classList.toggle("active", selectedHabits.has(habitName));
-  });
-}
-
-function renderCustomHabitCards(container, habits) {
-  container.innerHTML = "";
-
-  if (habits.length === 0) {
-    container.innerHTML = "<div class='empty-custom-habits'>Henüz profiline özel kart yok.</div>";
-    return;
+      saveLocalHistory(payload);
+      await fetchEntries();
+      resetFlow();
+      setEntryMessageType("success");
+      setEntryMessage("Günlük ve alışkanlık notların kaydedildi.");
+    } catch (error) {
+      saveLocalHistory(payload);
+      setHabitMessageType("error");
+      setHabitMessage(`Backend kaydı alınamadı ama alışkanlıklar tarayıcıda saklandı: ${error.message}`);
+      resetFlow({ keepStep: true, preserveMessage: true });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  habits.forEach((habit) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `habit-card ${habit.theme || "theme-custom"}`;
-    button.dataset.habit = habit.name;
-    button.dataset.category = habit.category;
-    button.innerHTML = `
-      <span class="habit-icon">${escapeHtml(habit.icon || "⭐")}</span>
-      <span class="habit-title">${escapeHtml(habit.name)}</span>
-      <span class="habit-desc">Bu alışkanlık profilinde kayıtlı ve her gün tekrar seçilebilir.</span>
-      <span class="habit-check">✓</span>
-    `;
-    container.appendChild(button);
-  });
-}
+  async function fetchEntries() {
+    try {
+      const response = await fetch(`${API_URL}/entries`);
+      if (!response.ok) {
+        throw new Error();
+      }
 
-function renderProfileHabits(listElement, habits, countElement, badgeElement) {
-  listElement.innerHTML = "";
-  countElement.textContent = String(habits.length);
-  badgeElement.textContent = `${habits.length} kayıt`;
-
-  if (habits.length === 0) {
-    const emptyItem = document.createElement("li");
-    emptyItem.className = "empty-state";
-    emptyItem.textContent = "Henüz profiline özel alışkanlık eklenmedi.";
-    listElement.appendChild(emptyItem);
-    return;
+      const data = await response.json();
+      setEntries(Array.isArray(data) ? data : []);
+    } catch {
+      setEntries([]);
+    }
   }
 
-  habits.forEach((habit) => {
-    const item = document.createElement("li");
-    item.className = "selected-item";
-    item.innerHTML = `
-      <span>${escapeHtml(habit.name)}</span>
-      <span class="selected-item-tag">${escapeHtml(habit.category)}</span>
-    `;
-    listElement.appendChild(item);
-  });
-}
-
-function renderSelectedHabits(listElement, habitsMap) {
-  listElement.innerHTML = "";
-
-  if (habitsMap.size === 0) {
-    const emptyItem = document.createElement("li");
-    emptyItem.className = "empty-state";
-    emptyItem.textContent = "Henüz alışkanlık seçilmedi.";
-    listElement.appendChild(emptyItem);
-    return;
+  function saveLocalHistory(payload) {
+    setHistory((current) => {
+      const nextHistory = [{ ...payload, saved_at: new Date().toISOString() }, ...current].slice(0, 10);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
+      return nextHistory;
+    });
   }
 
-  habitsMap.forEach((meta, habit) => {
-    const item = document.createElement("li");
-    item.className = "selected-item";
-    item.innerHTML = `
-      <span>${escapeHtml(habit)}</span>
-      <span class="selected-item-tag">${escapeHtml(meta.category)}</span>
-    `;
-    listElement.appendChild(item);
-  });
-}
+  function resetFlow(options = {}) {
+    setForm(initialForm);
+    setSelectedHabits([]);
+    setHabitStatuses({});
+    if (!options.preserveMessage) {
+      setHabitMessage("");
+    }
+    if (!options.keepStep) {
+      setStep("entry");
+      setEntryMessage("");
+    }
+  }
 
-function updateSelectionStats(habitsMap, countElement, badgeElement) {
-  const count = habitsMap.size;
-  countElement.textContent = String(count);
-  badgeElement.textContent = `${count} seçim`;
-}
+  return (
+    <main className="page-shell">
+      <section className="card card-wide">
+        {step === "entry" ? renderEntryView() : renderHabitsView()}
+      </section>
+    </main>
+  );
 
-function renderSummary(container, draft) {
-  container.innerHTML = `
-    <h2>Bugünkü Özet</h2>
-    <p>${escapeHtml(draft.text)}</p>
-    <div class="summary-grid">
-      <div class="summary-chip">
-        <strong>Duygu</strong>
-        <span>${escapeHtml(draft.mood)}</span>
-      </div>
-      <div class="summary-chip">
-        <strong>Stres</strong>
-        <span>${draft.stress_self}/10</span>
-      </div>
-      <div class="summary-chip">
-        <strong>Su</strong>
-        <span>${draft.water_liters} litre</span>
-      </div>
-      <div class="summary-chip">
-        <strong>Uyku</strong>
-        <span>${draft.sleep_hours} saat</span>
-      </div>
-      <div class="summary-chip">
-        <strong>Alışkanlık sayısı</strong>
-        <span>${draft.habits.length}</span>
-      </div>
-    </div>
-  `;
-}
-
-function renderHabitTrackers(container, habits, progressFill, progressText) {
-  container.innerHTML = "";
-
-  habits.forEach((habit, index) => {
-    const card = document.createElement("article");
-    card.className = "tracker-card";
-    card.innerHTML = `
-      <div class="tracker-top">
-        <div>
-          <h3>${escapeHtml(habit.name)}</h3>
-          <p>Bugün bu alışkanlık için tik veya çarpı seç.</p>
+  function renderEntryView() {
+    return (
+      <>
+        <div className="hero">
+          <span className="hero-badge">Günlük planlayıcı</span>
+          <h1>Günün nasıl geçtiğini ve alışkanlık hedeflerini birlikte düzenleyelim.</h1>
+          <p className="subtitle">
+            Bu alan artık kişiye özel çalışıyor. Eklediğin alışkanlıklar profilinde kalır, istediğinde tekrar seçip günlük takibini yapabilirsin.
+          </p>
         </div>
-        <span class="tracker-meta">${escapeHtml(habit.category || "Günlük hedef")}</span>
-      </div>
-      <div class="status-group">
-        <button type="button" class="status-btn done" data-index="${index}" data-status="✓" aria-label="Yapıldı">✓</button>
-        <button type="button" class="status-btn not-done" data-index="${index}" data-status="✕" aria-label="Yapılmadı">✕</button>
-      </div>
-      <label for="note-${index}">Küçük not</label>
-      <textarea id="note-${index}" data-index="${index}" placeholder="Kendine kısa bir not bırakabilirsin...">${escapeHtml(habit.note)}</textarea>
-    `;
 
-    container.appendChild(card);
-  });
+        <form className="stack-lg" onSubmit={submitEntry}>
+          <div>
+            <label htmlFor="journal">Günlük Metin</label>
+            <textarea
+              id="journal"
+              placeholder="Bugün neler oldu, nasıl hissediyorsun?"
+              required
+              value={form.text}
+              onChange={(event) => updateForm("text", event.target.value)}
+            />
+          </div>
 
-  container.querySelectorAll(".status-btn").forEach((button) => {
-    button.addEventListener("click", () => {
-      const habitIndex = Number(button.dataset.index);
-      const status = button.dataset.status;
-      habits[habitIndex].status = status;
+          <div>
+            <label>Duygu Etiketi</label>
+            <div className="mood-list">
+              {moodOptions.map((mood) => (
+                <button
+                  key={mood}
+                  type="button"
+                  className={`mood-btn${form.mood === mood ? " active" : ""}`}
+                  onClick={() => updateForm("mood", mood)}
+                >
+                  {mood}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      const card = button.closest(".tracker-card");
-      const buttons = card.querySelectorAll(".status-btn");
-      buttons.forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
+          <div>
+            <label htmlFor="stress">Duygu / Stres Yoğunluğu: <span>{form.stress_self}</span></label>
+            <input
+              id="stress"
+              type="range"
+              min="1"
+              max="10"
+              value={form.stress_self}
+              onChange={(event) => updateForm("stress_self", event.target.value)}
+            />
+          </div>
 
-      card.classList.remove("done-selected", "not-done-selected");
-      card.classList.add(status === "✓" ? "done-selected" : "not-done-selected");
+          <div className="input-group">
+            <div>
+              <label htmlFor="water">Su Miktarı / Litre</label>
+              <input
+                id="water"
+                type="number"
+                min="0"
+                max="10"
+                step="0.1"
+                placeholder="2.5"
+                required
+                value={form.water_liters}
+                onChange={(event) => updateForm("water_liters", event.target.value)}
+              />
+            </div>
 
-      updateProgress(habits, progressFill, progressText);
-    });
-  });
+            <div>
+              <label htmlFor="sleep">Uyku Saati</label>
+              <input
+                id="sleep"
+                type="number"
+                min="0"
+                step="0.5"
+                placeholder="7"
+                required
+                value={form.sleep_hours}
+                onChange={(event) => updateForm("sleep_hours", event.target.value)}
+              />
+            </div>
+          </div>
 
-  container.querySelectorAll("textarea[data-index]").forEach((textarea) => {
-    textarea.addEventListener("input", () => {
-      const habitIndex = Number(textarea.dataset.index);
-      habits[habitIndex].note = textarea.value.trim();
-    });
-  });
-}
+          <section className="habit-builder">
+            <div className="habit-builder-top">
+              <div className="section-heading">
+                <h2>Alışkanlıklarını Seç</h2>
+                <p>Hazır kartlardan seç, kendi kartını ekle ve profilinde sakla.</p>
+              </div>
 
-function updateProgress(habits, fillElement, textElement) {
-  const total = habits.length;
-  const completed = habits.filter((habit) => habit.status).length;
-  const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+              <div className="habit-stats">
+                <div className="habit-stat-card">
+                  <strong>{selectedHabits.length}</strong>
+                  <span>Bugün seçilen</span>
+                </div>
+                <div className="habit-stat-card">
+                  <strong>{profileHabits.length}</strong>
+                  <span>Profilde kayıtlı</span>
+                </div>
+              </div>
+            </div>
 
-  fillElement.style.width = `${percent}%`;
+            <section className="profile-panel">
+              <div className="selected-header">
+                <h3>Kişisel Profil Alışkanlıkların</h3>
+                <span className="selected-badge">{profileHabits.length} kayıt</span>
+              </div>
+              <p className="profile-copy">Buraya eklediğin alışkanlıklar sonraki girişlerinde de burada kalır.</p>
+              <ul className="selected-list">
+                {profileHabits.length === 0 ? (
+                  <li className="empty-state">Henüz profiline özel alışkanlık eklenmedi.</li>
+                ) : (
+                  profileHabits.map((habit) => (
+                    <li key={habit.name} className="selected-item">
+                      <span>{habit.name}</span>
+                      <span className="selected-item-tag">{habit.category}</span>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </section>
 
-  if (total === 0) {
-    textElement.textContent = "Henüz seçim yapılmadı.";
-    return;
+            {allHabitGroups.map((group) => (
+              <div key={group.title} className="habit-category">
+                <div className="habit-category-header">
+                  <h3>{group.title}</h3>
+                  <p>{group.description}</p>
+                </div>
+                <div className="habit-options">
+                  {group.habits.length === 0 ? (
+                    <div className="empty-custom-habits">Henüz profiline özel kart yok.</div>
+                  ) : (
+                    group.habits.map((habit) => {
+                      const isActive = selectedHabits.some((item) => item.name === habit.name);
+                      return (
+                        <button
+                          key={habit.name}
+                          type="button"
+                          className={`habit-card ${habit.theme}${isActive ? " active" : ""}`}
+                          onClick={() => toggleHabit(habit)}
+                        >
+                          <span className="habit-icon">{habit.icon}</span>
+                          <span className="habit-title">{habit.name}</span>
+                          <span className="habit-desc">{habit.description}</span>
+                          <span className="habit-check">Seçildi</span>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            ))}
+
+            <div className="custom-habit-panel">
+              <div className="custom-habit-copy">
+                <h3>Kendi alışkanlığını oluştur</h3>
+              </div>
+              <div className="custom-habit-row">
+                <input
+                  type="text"
+                  placeholder="Örnek: 20 dakika yürüdüm"
+                  value={customHabit}
+                  onChange={(event) => setCustomHabit(event.target.value)}
+                />
+                <button type="button" id="addHabitBtn" className="secondary-btn" onClick={addCustomHabit}>
+                  Profile ekle
+                </button>
+              </div>
+            </div>
+
+            <div className="selected-habits-box">
+              <div className="selected-header">
+                <h3>Bugün Seçilen Alışkanlıklar</h3>
+                <span className="selected-badge">{selectedHabits.length} seçim</span>
+              </div>
+              <ul className="selected-list">
+                {selectedHabits.length === 0 ? (
+                  <li className="empty-state">Henüz alışkanlık seçilmedi.</li>
+                ) : (
+                  selectedHabits.map((habit) => (
+                    <li key={habit.name} className="selected-item">
+                      <span>{habit.name}</span>
+                      <span className="selected-item-tag">{habit.category}</span>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          </section>
+
+          <button type="submit" className="save-btn">Alışkanlık sayfasına geç</button>
+        </form>
+
+        <p className="message" style={{ color: entryMessageType === "success" ? "#15803d" : "#dc2626" }}>
+          {entryMessage}
+        </p>
+      </>
+    );
   }
 
-  textElement.textContent = `${total} alışkanlıktan ${completed} tanesinde seçim yapıldı.`;
-}
+  function renderHabitsView() {
+    return (
+      <>
+        <div className="hero">
+          <span className="hero-badge">Alışkanlık takibi</span>
+          <h1>Seçtiğin alışkanlıkları şimdi tek tek işaretleyebilirsin.</h1>
+        </div>
 
-async function saveEntry(draft) {
-  const entryData = {
-    text: draft.text,
-    water_liters: draft.water_liters,
-    sleep_hours: draft.sleep_hours,
-    stress_self: draft.stress_self
-  };
+        <section className="summary-card">
+          <h2>Bugünkü Özet</h2>
+          <p>{form.text}</p>
+          <div className="summary-grid">
+            <div className="summary-chip"><strong>Duygu</strong><span>{form.mood}</span></div>
+            <div className="summary-chip"><strong>Stres</strong><span>{form.stress_self}/10</span></div>
+            <div className="summary-chip"><strong>Su</strong><span>{form.water_liters} litre</span></div>
+            <div className="summary-chip"><strong>Uyku</strong><span>{form.sleep_hours} saat</span></div>
+            <div className="summary-chip"><strong>Alışkanlık sayısı</strong><span>{selectedHabits.length}</span></div>
+          </div>
+        </section>
 
-  const response = await fetch(`${API_URL}/entries`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(entryData)
-  });
+        <section className="progress-panel">
+          <div className="progress-copy">
+            <h2>Bugünkü ilerlemen</h2>
+            <p>
+              {progress.total === 0
+                ? "Henüz seçim yapılmadı."
+                : `${progress.total} alışkanlıktan ${progress.completed} tanesinde seçim yapıldı.`}
+            </p>
+          </div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: `${progress.percent}%` }} />
+          </div>
+        </section>
 
-  if (!response.ok) {
-    throw new Error("günlük kaydı gönderilemedi");
+        <section className="stack-lg">
+          <div className="section-heading">
+            <h2>Bugünkü Alışkanlıkların</h2>
+            <p>Tüm kartlarda tik veya çarpı seçildiğinde kaydetme akışı tamamlanır.</p>
+          </div>
+
+          <div className="habit-tracker-list">
+            {selectedHabits.map((habit, index) => {
+              const state = habitStatuses[habit.name] || { status: "", note: "" };
+              const selectedClass =
+                state.status === "done" ? " done-selected" : state.status === "not-done" ? " not-done-selected" : "";
+
+              return (
+                <article key={habit.name} className={`tracker-card${selectedClass}`}>
+                  <div className="tracker-top">
+                    <div>
+                      <h3>{habit.name}</h3>
+                      <p>Bugün bu alışkanlık için tik veya çarpı seç.</p>
+                    </div>
+                    <span className="tracker-meta">{habit.category}</span>
+                  </div>
+
+                  <div className="status-group">
+                    <button
+                      type="button"
+                      className={`status-btn done${state.status === "done" ? " active" : ""}`}
+                      onClick={() => updateHabitStatus(habit.name, "status", "done")}
+                      aria-label="Yapıldı"
+                      title="Yapıldı"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      type="button"
+                      className={`status-btn not-done${state.status === "not-done" ? " active" : ""}`}
+                      onClick={() => updateHabitStatus(habit.name, "status", "not-done")}
+                      aria-label="Yapılmadı"
+                      title="Yapılmadı"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div>
+                    <label htmlFor={`note-${index}`}>Küçük not</label>
+                    <textarea
+                      id={`note-${index}`}
+                      placeholder="Kendine kısa bir not bırakabilirsin..."
+                      value={state.note}
+                      onChange={(event) => updateHabitStatus(habit.name, "note", event.target.value)}
+                    />
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="page-actions">
+            <button type="button" className="secondary-btn" onClick={() => setStep("entry")}>
+              Geri dön
+            </button>
+            <button type="button" className="save-btn" onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "Kaydediliyor..." : "Günlüğü kaydet"}
+            </button>
+          </div>
+        </section>
+
+        <p className="message" style={{ color: habitMessageType === "success" ? "#15803d" : "#dc2626" }}>
+          {habitMessage}
+        </p>
+
+        <section className="entries-section">
+          <div className="section-heading">
+            <h2>Son Kayıtlar</h2>
+            <p>Kaydedilen günlük bilgileri burada görünsün.</p>
+          </div>
+          <div className="entries-grid">
+            {entries.length === 0 ? (
+              <p className="empty-state">Henüz kayıt yok veya backend erişilemiyor.</p>
+            ) : (
+              entries.map((entry, index) => (
+                <article key={`${entry.text}-${index}`} className="entry-card">
+                  <h3>{entry.text}</h3>
+                  <p><strong>Su:</strong> {entry.water_liters} L</p>
+                  <p><strong>Uyku:</strong> {entry.sleep_hours} saat</p>
+                  <p><strong>Stres:</strong> {entry.stress_self}/10</p>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="entries-section">
+          <div className="section-heading">
+            <h2>Kaydedilen Alışkanlık Notları</h2>
+          </div>
+          <div className="entries-grid">
+            {history.length === 0 ? (
+              <p className="empty-state">Henüz kaydedilmiş alışkanlık notu yok.</p>
+            ) : (
+              history.map((item) => (
+                <article key={item.saved_at} className="entry-card">
+                  <h3>{item.mood} hissiyle kaydedildi</h3>
+                  <p>{item.text}</p>
+                  <ul>
+                    {item.habits.map((habit) => (
+                      <li key={`${item.saved_at}-${habit.name}`}>
+                        <strong>{habit.name}:</strong> {habit.status === "done" ? "Yapıldı" : "Yapılmadı"}
+                        {habit.note ? ` - ${habit.note}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
+      </>
+    );
   }
-}
-
-async function getEntries(entriesList) {
-  if (!entriesList) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_URL}/entries`);
-
-    if (!response.ok) {
-      throw new Error("Kayıtlar alınamadı.");
-    }
-
-    const entries = await response.json();
-    entriesList.innerHTML = "";
-
-    if (entries.length === 0) {
-      entriesList.innerHTML = "<p class='empty-state'>Henüz kayıt yok.</p>";
-      return;
-    }
-
-    entries.forEach((entry) => {
-      const card = document.createElement("article");
-      card.className = "entry-card";
-      card.innerHTML = `
-        <h3>${escapeHtml(entry.text)}</h3>
-        <p><strong>Su:</strong> ${entry.water_liters} L</p>
-        <p><strong>Uyku:</strong> ${entry.sleep_hours} saat</p>
-        <p><strong>Stres:</strong> ${entry.stress_self}/10</p>
-      `;
-      entriesList.appendChild(card);
-    });
-  } catch (error) {
-    entriesList.innerHTML = "<p class='empty-state'>Kayıtlar yüklenemedi.</p>";
-  }
-}
-
-function saveLocalHistory(draft) {
-  const existing = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-  const nextEntry = {
-    ...draft,
-    saved_at: new Date().toISOString()
-  };
-
-  localStorage.setItem(HISTORY_KEY, JSON.stringify([nextEntry, ...existing].slice(0, 10)));
-}
-
-function renderHabitHistory(container) {
-  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-  container.innerHTML = "";
-
-  if (history.length === 0) {
-    container.innerHTML = "<p class='empty-state'>Henüz kaydedilmiş alışkanlık notu yok.</p>";
-    return;
-  }
-
-  history.forEach((entry) => {
-    const card = document.createElement("article");
-    card.className = "entry-card";
-
-    const habitItems = entry.habits
-      .map((habit) => `<li><strong>${escapeHtml(habit.name)}:</strong> ${escapeHtml(habit.status)}${habit.note ? ` - ${escapeHtml(habit.note)}` : ""}</li>`)
-      .join("");
-
-    card.innerHTML = `
-      <h3>${escapeHtml(entry.mood)} hissiyle kaydedildi</h3>
-      <p>${escapeHtml(entry.text)}</p>
-      <ul>${habitItems}</ul>
-    `;
-
-    container.appendChild(card);
-  });
-}
-
-function readDraft() {
-  const rawDraft = sessionStorage.getItem(DRAFT_KEY);
-
-  if (!rawDraft) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(rawDraft);
-  } catch (error) {
-    sessionStorage.removeItem(DRAFT_KEY);
-    return null;
-  }
-}
-
-function readProfileHabits() {
-  try {
-    return JSON.parse(localStorage.getItem(PROFILE_KEY) || "[]");
-  } catch (error) {
-    return [];
-  }
-}
-
-function saveProfileHabits(habits) {
-  localStorage.setItem(PROFILE_KEY, JSON.stringify(habits));
-}
-
-function showMessage(element, text, type) {
-  element.textContent = text;
-  element.style.color = type === "success" ? "#15803d" : "#dc2626";
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }

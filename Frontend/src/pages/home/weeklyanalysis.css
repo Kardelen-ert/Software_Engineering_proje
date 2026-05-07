@@ -1,0 +1,141 @@
+body {
+  background: #f6f8f4;
+  font-family: "Poppins", sans-serif;
+}
+
+.container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* HEADER */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subtitle {
+  color: #888;
+  font-size: 14px;
+}
+
+.top-right span {
+  margin-left: 10px;
+  font-size: 20px;
+}
+
+/* TABS */
+.tabs {
+  margin: 20px 0;
+}
+
+.tabs button {
+  border: none;
+  padding: 8px 15px;
+  margin-right: 10px;
+  border-radius: 15px;
+  background: #eee;
+  cursor: pointer;
+}
+
+.tabs button:hover {
+  background: #cfdac3;
+}
+
+.tabs .active {
+  background: #dfe8d5;
+}
+
+/* GRID */
+.grid {
+  display: flex;
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  flex: 1;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  transition: 0.3s;
+}
+
+.card:hover{
+  transform: translateY(-5px);
+  box-shadow:0 15px 30px rgba(0,0,0,0.08);
+}
+
+.big {
+  flex: 1.2;
+}
+
+/* DOUGHNUT */
+.doughnut-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.legend p {
+  margin: 5px 0;
+}
+
+.doughnut-wrapper canvas {
+  transition: 0.3s;
+}
+
+.doughnut-wrapper canvas:hover {
+  filter: drop-shadow(0 0 12px rgba(168,230,207,0.6));
+  transform: scale(1.05);
+}
+
+/* INFO */
+.info-box {
+  margin-top: 15px;
+  background: #f2f5ef;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* AI */
+.ai {
+  margin-top: 20px;
+  background: #eef3ea;
+  position: relative;
+}
+
+.ai::before {
+  content: "💡";
+  position: absolute;
+  left: 10px;
+  top: -10px;
+  font-size: 20px;
+}
+
+/* NAVBAR */
+.navbar {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-around;
+  background: white;
+  padding: 15px;
+  border-radius: 20px;
+}
+
+.navbar span {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.navbar span:hover {
+  transform: scale(1.2);
+}
+
+/* LOADING */
+.loading {
+  text-align: center;
+  margin-top: 100px;
+}
