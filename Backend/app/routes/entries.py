@@ -8,7 +8,13 @@ from app.services.emotion_service import analyze_entry_nlp
 from app.services.recommendation_service import generate_recommendation
 from app.services.stress_model_service import predict_stress, predict_stress_batch
 from app.schemas.entry import EntryCreate, EntryResponse, EntryUpdate
-from app.services.entry_service import create_entry, get_all_entries, delete_entry, update_entry
+from app.services.entry_service import (
+    DailyEntryLimitExceededError,
+    create_entry,
+    delete_entry,
+    get_all_entries,
+    update_entry,
+)
 router = APIRouter()
 
 
@@ -28,7 +34,10 @@ def build_analysis_response(entry, emotion, stress: float, recommendations: list
 
 @router.post("/entries", response_model=EntryResponse)
 def create_entry_endpoint(entry: EntryCreate, db: Session = Depends(get_db)):
-    return create_entry(db, entry)
+    try:
+        return create_entry(db, entry)
+    except DailyEntryLimitExceededError as error:
+        raise HTTPException(status_code=429, detail=str(error)) from error
 
 
 @router.get("/entries", response_model=list[EntryResponse])
