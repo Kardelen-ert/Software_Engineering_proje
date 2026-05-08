@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
 import './Register.css'; 
 
 const Login = () => {
-    // email yerine username state'i tutuyoruz
+    const navigate = useNavigate(); // Yönlendiriciyi tanımlıyoruz
+
     const [formData, setFormData] = useState({
         username: '',
         password: ''
@@ -16,18 +17,52 @@ const Login = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
 
-        // Kontrol mekanizmasını da username'e göre güncelledik
         if (!formData.username || !formData.password) {
             setError('Lütfen tüm alanları doldurun.');
             return;
         }
 
-        setSuccess('Giriş başarılı! Yönlendiriliyorsunuz...');
+        try {
+            
+            const formDataToSend = new URLSearchParams();
+            formDataToSend.append('username', formData.username);
+            formDataToSend.append('password', formData.password);
+
+            const response = await fetch('http://localhost:8000/auth/login', {
+                method: 'POST',
+                headers: {
+                    
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formDataToSend 
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setSuccess('Giriş başarılı! Profiline yönlendiriliyorsun...');
+                
+                if (data.access_token) {
+                    localStorage.setItem('token', data.access_token);
+                }
+
+                // 2 saniye sonra otomatik olarak profil sayfasına fırlatıyoruz
+                setTimeout(() => {
+                    navigate('/profile');
+                }, 2000);
+                
+            } else {
+                setError(data.detail || 'Kullanıcı adı veya şifre hatalı.');
+            }
+            
+        } catch (err) {
+            setError('Sunucuya ulaşılamıyor.');
+        }
     };
 
     return (
@@ -47,7 +82,7 @@ const Login = () => {
                         <input 
                             type="text" 
                             name="username" 
-                            placeholder="Kullanıcı Adı" 
+                            placeholder="Örn: Kullanıcı adınızı giriniz" 
                             value={formData.username} 
                             onChange={handleChange} 
                             required 
@@ -55,10 +90,9 @@ const Login = () => {
                     </div>
 
                     <div className="input-group">
-                        {/* Şifre ve Şifremi Unuttum yan yana */}
                         <div className="label-row">
                             <label>Şifre</label>
-                            <Link to="/forgot-password" className="forgot-password-link">Şifremi Unuttum</Link>
+                            <Link to="/forgot-password" alt="Şifremi Unuttum" className="forgot-password-link">Şifremi Unuttum</Link>
                         </div>
                         <input 
                             type="password" 
@@ -77,7 +111,6 @@ const Login = () => {
                     Henüz bir hesabın yok mu? 
                     <Link to="/register">Kayıt Ol</Link>
                 </div>
-
             </div>
         </div>
     );

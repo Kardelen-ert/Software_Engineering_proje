@@ -1,106 +1,105 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 
 const Profile = () => {
     const navigate = useNavigate();
-
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [profileData, setProfileData] = useState({
-        username: 'glsm',
-        email: 'ornek@mail.com',
-        bio: 'slm ben glsm buralara backendden gelmem lazım'
+        username: '',
+        email: '',
+        bio: ''
     });
 
-    const [successMsg, setSuccessMsg] = useState('');
+    
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const token = localStorage.getItem('token');
 
-    const handleChange = (e) => {
-        setProfileData({ ...profileData, [e.target.name]: e.target.value });
-    };
+            if (!token) {
+                navigate('/login');
+                return;
+            }
 
-    const handleSave = (e) => {
-        e.preventDefault();
-        setSuccessMsg('Profil bilgilerin başarıyla güncellendi!');
-        setTimeout(() => setSuccessMsg(''), 3000);
-    };
+            try {
+                const response = await fetch('http://localhost:8000/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-    const handleLogout = () => {
-        navigate('/login');
-    };
+                if (response.ok) {
+                    const data = await response.json();
+                    setProfileData({
+                        username: data.username || '',
+                        email: data.email || '',
+                        bio: data.bio || ''
+                    });
+                } else {
+                    localStorage.removeItem('token');
+                    navigate('/login');
+                }
+            } catch (err) {
+                setError('Veriler yüklenirken bir hata oluştu.');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const getInitials = (name) => {
-        if (!name) return 'U';
-        const words = name.split(' ');
-        if (words.length > 1) return words[0][0] + words[1][0];
-        return words[0][0];
-    };
+        fetchUserData();
+    }, [navigate]);
+    
+
+    if (loading) return <div className="profile-container" style={{color: '#4a6741'}}>Yükleniyor...</div>;
 
     return (
-        <div className="profile-dashboard">
-            
-            {/* Sol Taraf - Yan Menü (Sidebar) */}
-            <aside className="profile-sidebar">
-                <div className="profile-avatar-large">
-                    {getInitials(profileData.username)}
-                </div>
-                <h2>{profileData.username}</h2>
-                <p className="bio-text">
-                    {profileData.bio || "Henüz bir ruh hali belirtilmedi."}
-                </p>
-                <button className="btn-logout" onClick={handleLogout}>
-                    Çıkış Yap
-                </button>
-            </aside>
-
-            {/* Sağ Taraf - Ana İçerik */}
-            <main className="profile-main">
-                <div className="main-header">
-                    <h1>Hesap Ayarları</h1>
-                    <p>Kişisel bilgilerini ve ruh halini buradan güncelleyebilirsin.</p>
+        <div className="profile-container">
+            <div className="daily-card">
+                <div className="card-header">
+                    <span className="badge">Profil Ayarları</span>
+                    <h1>Kişisel bilgilerini ve ruh halini düzenleyelim.</h1>
+                    <p>Bu alan artık sana özel çalışıyor. Bilgilerin güncel kaldığında takibini daha rahat yapabilirsin.</p>
                 </div>
 
-                {successMsg && <div className="alert-msg">{successMsg}</div>}
-
-                <div className="profile-form-wide">
-                    <form onSubmit={handleSave}>
-                        
-                        <div className="form-row">
-                            <div className="input-group">
-                                <label>Kullanıcı Adı</label>
-                                <input 
-                                    type="text" 
-                                    name="username" 
-                                    value={profileData.username} 
-                                    onChange={handleChange} 
-                                    required 
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>E-posta Adresi</label>
-                                <input 
-                                    type="email" 
-                                    name="email" 
-                                    value={profileData.email} 
-                                    onChange={handleChange} 
-                                    required 
-                                />
-                            </div>
+                <div className="profile-content">
+                    {error && <div className="alert error">{error}</div>}
+                    
+                    <div className="input-row">
+                        <div className="input-box">
+                            <label>Kullanıcı Adı</label>
+                            <input type="text" value={profileData.username} disabled />
                         </div>
-
-                        <div className="input-group" style={{ marginBottom: '25px' }}>
-                            <label>Şu Anki Ruh Halin / Biyografi</label>
-                            <textarea 
-                                name="bio" 
-                                value={profileData.bio} 
-                                onChange={handleChange} 
-                                placeholder="Bugünlerde nasıl hissediyorsun?"
-                            />
+                        <div className="input-box">
+                            <label>E-posta Adresi</label>
+                            <input type="email" value={profileData.email} readOnly />
                         </div>
+                    </div>
 
-                        <button type="submit" className="btn-save">Değişiklikleri Kaydet</button>
-                    </form>
+                    <div className="input-box full-width">
+                        <label>Hakkımda / Ruh Hali</label>
+                        <textarea 
+                            placeholder="Bugün neler oldu, nasıl hissediyorsun?"
+                            value={profileData.bio}
+                            onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
+                        />
+                    </div>
+
+                    <div className="button-group">
+                        <button className="save-btn" onClick={() => alert("Backend güncellemesi pasif.")}>
+                            Değişiklikleri Kaydet
+                        </button>
+                        <button className="logout-btn" onClick={() => {
+                            localStorage.removeItem('token');
+                            navigate('/login');
+                        }}>
+                            Çıkış Yap
+                        </button>
+                    </div>
                 </div>
-            </main>
-
+            </div>
         </div>
     );
 };
