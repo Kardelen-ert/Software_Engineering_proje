@@ -206,7 +206,18 @@ export default function DailySection() {
       });
 
       if (!response.ok) {
-        throw new Error("Günlük kaydı gönderilemedi.");
+        let errorMessage = "Günlük kaydı gönderilemedi.";
+
+        try {
+          const errorData = await response.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Varsayılan mesaj kullanılır.
+        }
+
+        throw new Error(errorMessage);
       }
 
       saveLocalHistory(payload);
@@ -215,9 +226,8 @@ export default function DailySection() {
       setEntryMessageType("success");
       setEntryMessage("Günlük ve alışkanlık notların kaydedildi.");
     } catch (error) {
-      saveLocalHistory(payload);
       setHabitMessageType("error");
-      setHabitMessage(`Backend kaydı alınamadı ama alışkanlıklar tarayıcıda saklandı: ${error.message}`);
+      setHabitMessage(error.message);
       resetFlow({ keepStep: true, preserveMessage: true });
     } finally {
       setIsSaving(false);
