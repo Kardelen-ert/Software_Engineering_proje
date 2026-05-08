@@ -3,14 +3,29 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.emotion_results import EmotionResult
 from app.models.entry import DailyEntry
+from app.services.emotion_service import analyze_entry_nlp
 
 router = APIRouter()
 
 @router.get("/analysis/weekly")
 def weekly_analysis(db: Session = Depends(get_db)):
-    results = db.query(EmotionResult, DailyEntry)\
-      .join(DailyEntry, EmotionResult.entry_id == DailyEntry.id)\
-      .all()
+    entries = db.query(DailyEntry).order_by(DailyEntry.created_at.asc()).all()
+    results = []
+
+    for entry in entries:
+        emotion = db.query(EmotionResult).filter(EmotionResult.entry_id == entry.id).first()
+
+        if emotion is None:
+            try:
+                emotion = analyze_entry_nlp(db, entry)
+            except Exception:
+                emotion = EmotionResult(entry_id=entry.id, happy=0, sad=0, anger=0, anxiety=0)
+                db.add(emotion)
+                db.commit()
+                db.refresh(emotion)
+
+        results.append((emotion, entry))
+
     if not results:
         return {
             "weeklyEmotions": {

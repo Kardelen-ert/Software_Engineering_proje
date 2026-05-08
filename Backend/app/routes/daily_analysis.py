@@ -7,6 +7,7 @@ from app.models.emotion_results import EmotionResult
 
 from datetime import datetime
 
+from app.services.emotion_service import analyze_entry_nlp
 from app.services.recommendation_service import generate_recommendation
 
 router = APIRouter()
@@ -16,11 +17,22 @@ def daily_analysis(db: Session = Depends(get_db)):
 
     today = datetime.utcnow().date()
 
-    results = (
-        db.query(EmotionResult, DailyEntry)
-        .join(DailyEntry, EmotionResult.entry_id == DailyEntry.id)
-        .all()
-    )
+    entries = db.query(DailyEntry).order_by(DailyEntry.created_at.asc()).all()
+    results = []
+
+    for entry in entries:
+        emotion = db.query(EmotionResult).filter(EmotionResult.entry_id == entry.id).first()
+
+        if emotion is None:
+            try:
+                emotion = analyze_entry_nlp(db, entry)
+            except Exception:
+                emotion = EmotionResult(entry_id=entry.id, happy=0, sad=0, anger=0, anxiety=0)
+                db.add(emotion)
+                db.commit()
+                db.refresh(emotion)
+
+        results.append((emotion, entry))
 
     # sadece bugünkü entryler
     today_results = [

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.entry import DailyEntry
+from app.models.emotion_results import EmotionResult
 from app.schemas.ai import EntryAnalysisResponse
 from app.services.emotion_service import analyze_entry_nlp
 from app.services.recommendation_service import generate_recommendation
@@ -35,7 +36,19 @@ def build_analysis_response(entry, emotion, stress: float, recommendations: list
 @router.post("/entries", response_model=EntryResponse)
 def create_entry_endpoint(entry: EntryCreate, db: Session = Depends(get_db)):
     try:
-        return create_entry(db, entry)
+        created_entry = create_entry(db, entry)
+
+        try:
+            analyze_entry_nlp(db, created_entry)
+        except Exception:
+            # Analiz modeli geçici olarak unavailable olsa bile entry kaydı kalsın.
+            emotion = db.query(EmotionResult).filter(EmotionResult.entry_id == created_entry.id).first()
+            if emotion is None:
+                emotion = EmotionResult(entry_id=created_entry.id)
+                db.add(emotion)
+                db.commit()
+
+        return created_entry
     except DailyEntryLimitExceededError as error:
         raise HTTPException(status_code=429, detail=str(error)) from error
 

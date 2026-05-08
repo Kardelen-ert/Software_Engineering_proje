@@ -197,7 +197,17 @@ export default function DailySection() {
   }
 
   async function submitEntry(event) {
-    event.preventDefault();
+    event?.preventDefault?.();
+
+    if (isSaving) {
+      return;
+    }
+
+    if (!form.text.trim()) {
+      setEntryMessageType("error");
+      setEntryMessage("Önce günlük metnini yaz.");
+      return;
+    }
 
     if (!form.mood) {
       setEntryMessageType("error");
@@ -208,6 +218,12 @@ export default function DailySection() {
     if (selectedHabits.length === 0) {
       setEntryMessageType("error");
       setEntryMessage("En az bir alışkanlık seç veya kendi alışkanlığını ekle.");
+      return;
+    }
+
+    if (form.water_liters === "" || form.sleep_hours === "") {
+      setEntryMessageType("error");
+      setEntryMessage("Su ve uyku alanlarını doldur.");
       return;
     }
 
