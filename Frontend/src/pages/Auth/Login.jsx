@@ -45,7 +45,7 @@ const Login = () => {
             const data = await response.json();
 
             if (response.ok) {
-                setSuccess('Giriş başarılı! Profiline yönlendiriliyorsun...');
+                setSuccess('Giriş başarılı! ');
                 
                 if (data.access_token) {
                     localStorage.setItem('token', data.access_token);
@@ -53,7 +53,7 @@ const Login = () => {
 
                 // 2 saniye sonra otomatik olarak profil sayfasına fırlatıyoruz
                 setTimeout(() => {
-                    navigate('/profile');
+                    navigate('/daily');
                 }, 2000);
                 
             } else {

@@ -5,17 +5,21 @@ import WeeklyAnalysis from "../pages/home/weeklyanalysis";
 import Profile from '../pages/ProfileSection/Profile';
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
+import Home from '../pages/Home/Home';
+
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/daily" replace />} />
+      <Route path="/" element={<Home />} />
+
       <Route path="/daily" element={<DailySection />} />
       <Route path="/analysis" element={<WeeklyAnalysis />} />
-      <Route path="*" element={<Navigate to="/daily" replace />} />
-       <Route path="/login" element={<Login />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/profile" element={<Profile />} />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

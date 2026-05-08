@@ -8,11 +8,9 @@ const Profile = () => {
     const [error, setError] = useState('');
     const [profileData, setProfileData] = useState({
         username: '',
-        email: '',
-        bio: ''
+        email: ''
     });
 
-    
     useEffect(() => {
         const fetchUserData = async () => {
             const token = localStorage.getItem('token');
@@ -35,8 +33,7 @@ const Profile = () => {
                     const data = await response.json();
                     setProfileData({
                         username: data.username || '',
-                        email: data.email || '',
-                        bio: data.bio || ''
+                        email: data.email || ''
                     });
                 } else {
                     localStorage.removeItem('token');
@@ -51,17 +48,16 @@ const Profile = () => {
 
         fetchUserData();
     }, [navigate]);
-    
 
-    if (loading) return <div className="profile-container" style={{color: '#4a6741'}}>Yükleniyor...</div>;
+    if (loading) return <div className="profile-container loading-text">Yükleniyor...</div>;
 
     return (
         <div className="profile-container">
             <div className="daily-card">
                 <div className="card-header">
                     <span className="badge">Profil Ayarları</span>
-                    <h1>Kişisel bilgilerini ve ruh halini düzenleyelim.</h1>
-                    <p>Bu alan artık sana özel çalışıyor. Bilgilerin güncel kaldığında takibini daha rahat yapabilirsin.</p>
+                    <h1>Kişisel bilgilerini kontrol et.</h1>
+                    <p>Hesap bilgilerini buradan görebilirsin</p>
                 </div>
 
                 <div className="profile-content">
@@ -78,19 +74,17 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    <div className="input-box full-width">
-                        <label>Hakkımda / Ruh Hali</label>
-                        <textarea 
-                            placeholder="Bugün neler oldu, nasıl hissediyorsun?"
-                            value={profileData.bio}
-                            onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
-                        />
+                    <div className="daily-prompt-card">
+                        <p>Bugün nasıl hissettiğini henüz kaydetmedin mi?</p>
+                        <button 
+                            className="go-daily-btn" 
+                            onClick={() => navigate('/daily')}
+                        >
+                            Bugünkü Kaydını Gir
+                        </button>
                     </div>
 
                     <div className="button-group">
-                        <button className="save-btn" onClick={() => alert("Backend güncellemesi pasif.")}>
-                            Değişiklikleri Kaydet
-                        </button>
                         <button className="logout-btn" onClick={() => {
                             localStorage.removeItem('token');
                             navigate('/login');
