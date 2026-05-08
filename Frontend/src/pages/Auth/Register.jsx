@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
 import './Register.css';
 
+const API_URL = 'http://127.0.0.1:8000';
+
 const Register = () => {
     const navigate = useNavigate(); // Yönlendirici tanımlandı
 
@@ -31,7 +33,7 @@ const Register = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:8000/auth/register', {
+            const response = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

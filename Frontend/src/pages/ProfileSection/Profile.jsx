@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 
+const API_URL = 'http://127.0.0.1:8000';
+
 const Profile = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -21,7 +23,7 @@ const Profile = () => {
             }
 
             try {
-                const response = await fetch('http://localhost:8000/auth/me', {
+                const response = await fetch(`${API_URL}/auth/me`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,

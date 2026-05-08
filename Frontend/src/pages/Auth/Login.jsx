@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
 import './Register.css'; 
 
+const API_URL = 'http://127.0.0.1:8000';
+
 const Login = () => {
     const navigate = useNavigate(); // Yönlendiriciyi tanımlıyoruz
 
@@ -33,7 +35,7 @@ const Login = () => {
             formDataToSend.append('username', formData.username);
             formDataToSend.append('password', formData.password);
 
-            const response = await fetch('http://localhost:8000/auth/login', {
+            const response = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
                     
