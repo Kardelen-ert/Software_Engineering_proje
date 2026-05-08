@@ -44,7 +44,7 @@ export default function App() {
             border: "1px solid #d9e2d4"
           })}
         >
-          Weekly Analysis
+          Analysis
         </NavLink>
       </nav>
 

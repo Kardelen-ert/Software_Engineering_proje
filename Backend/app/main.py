@@ -10,6 +10,7 @@ from app.routes.connections import router as connections_router
 from app.routes.entries import router as entries_router
 from app.routes.health import router as health_router
 from app.routes.weekly_analysis import router as weekly_router
+from app.routes.daily_analysis import router as daily_router
 
 from app.models.user import User
 from app.models import entry
@@ -34,3 +35,4 @@ app.include_router(entries_router)
 app.include_router(auth_router)
 app.include_router(weekly_router)
 app.include_router(connections_router)
+app.include_router(daily_router)
