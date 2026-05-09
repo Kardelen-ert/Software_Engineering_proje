@@ -7,6 +7,7 @@ import Profile from "../pages/ProfileSection/Profile";
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
 import Home from "../pages/Home/Home";
+import Friends from "../pages/FriendSection/Friends";
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -43,6 +44,8 @@ export default function AppRoutes() {
 
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/connections" element={<Friends />} />
+ 
 
       <Route
         path="/profile"

@@ -1,0 +1,103 @@
+/* 💥 SAYFA ORTALAMA */
+.friends-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 💥 HEADER */
+.friends-header-card {
+  background: #fff;
+  padding: 24px 28px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+
+/* HEADER FLEX */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* BAŞLIK */
+.friends-header-card h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: #2f3a33;
+}
+
+.friends-header-card p {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #888;
+}
+
+/* 🌿 SAĞ ICON */
+.header-badge {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 22px;
+
+  background: linear-gradient(135deg, #cfe7d3, #e8f5e9);
+  box-shadow: 0 6px 18px rgba(127, 183, 126, 0.25);
+
+  transition: 0.3s;
+}
+
+.header-badge:hover {
+  transform: scale(1.08);
+}
+
+/* 💥 CONTENT */
+.friends-content-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.tab-left {
+  display: flex;
+  gap: 10px;
+}
+
+.tabs button {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  background: #f3f3f3;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.tabs button.active {
+  background: #7fb77e;
+  color: white;
+}
+
+/* SEARCH */
+.search-bar input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 20px;
+  border: none;
+  background: #f2eeec;
+  margin-bottom: 16px;
+}
