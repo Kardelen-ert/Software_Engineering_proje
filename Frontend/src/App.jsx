@@ -88,7 +88,23 @@ export default function App() {
             >
             Analysis
             </NavLink>
+            
+            <NavLink
+              to="/connections"
+              style={({ isActive }) => ({
+                textDecoration: "none",
+                padding: "10px 14px",
+                borderRadius: "999px",
+                fontWeight: 700,
+                color: isActive ? "#ffffff" : "#44524a",
+                background: isActive ? "#7fb77e" : "#f6f7f2",
+                border: "1px solid #d9e2d4"
+              })}
+            >
+              Connections
+            </NavLink>
           </div>
+          
 
           <div
             style={{
@@ -123,3 +139,4 @@ export default function App() {
     </>
   );
 }
+
