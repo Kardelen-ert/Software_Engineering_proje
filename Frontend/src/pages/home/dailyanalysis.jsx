@@ -1,47 +1,48 @@
 import React, { useEffect, useState } from "react";
 import "./dailyanalysis.css";
 
-import { Doughnut } from "react-chartjs-2";
-
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
-  Legend
+  Legend,
 } from "chart.js";
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend
-);
+import { Doughnut } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+const API_URL = "http://127.0.0.1:8000/analysis/daily";
+
+const quotes = [
+  "Bugün küçük bir adım atman bile yeterli 🌱",
+  "Duyguların geçici, sen güçlüsün ✨",
+  "Kendine nazik davranmayı unutma 💚",
+  "Dinlenmek de üretkenliğin bir parçasıdır ☁️",
+  "Şu an elinden gelenin en iyisini yapıyorsun 🌸",
+];
 
 export default function DailyAnalysis() {
-
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
   }, []);
 
   async function loadData() {
-
     try {
-
-      const res = await fetch(
-        "http://127.0.0.1:8000/analysis/daily"
-      );
-
-      const json = await res.json();
-
+      const response = await fetch(API_URL);
+      const json = await response.json();
       setData(json);
-
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   }
 
-  if (!data) {
+  if (loading) {
     return (
       <div className="daily-loading">
         Günlük analiz yükleniyor...
@@ -49,132 +50,98 @@ export default function DailyAnalysis() {
     );
   }
 
-  const emotions = data.dailyEmotions;
+  const emotions = data.dailyEmotions || {};
 
-  const doughnutData = {
-
-    labels: [
-      "Mutluluk",
-      "Üzgünlük",
-      "Kaygı",
-      "Öfke"
-    ],
-
+  const chartData = {
+    labels: ["Mutluluk", "Üzgünlük", "Kaygı", "Öfke"],
     datasets: [
       {
         data: [
-          emotions.happy,
-          emotions.sad,
-          emotions.anxiety,
-          emotions.anger
+          emotions.happy || 0,
+          emotions.sad || 0,
+          emotions.anxiety || 0,
+          emotions.anger || 0,
         ],
-
         backgroundColor: [
-          "#A8E6CF",
-          "#FFB7B2",
-          "#FFD8A8",
-          "#FFAAA5"
+          "#B8D8BA",
+          "#F5CFCF",
+          "#F8E1B7",
+          "#E8BDBD",
         ],
-
         borderWidth: 0,
-        hoverOffset: 12
-      }
-    ]
-  };
-
-  const doughnutOptions = {
-
-    plugins: {
-      legend: {
-        position: "top"
-      }
-    },
-
-    cutout: "68%"
+      },
+    ],
   };
 
   return (
+    <div className="daily-page">
 
-    <div className="daily-analysis">
+      <div className="bg-blob blob1"></div>
+      <div className="bg-blob blob2"></div>
 
-      {/* TOP GRID */}
+      <div className="daily-top">
 
-      <div className="daily-top-grid">
+        <div className="chart-card fade-up">
 
-        {/* CHART */}
-
-        <div className="daily-card chart-card">
-
-          <div className="card-header">
-            <h2>🌿 Günlük Ruh Hali</h2>
-          </div>
+          <h2>🌿 Günlük Ruh Hali</h2>
 
           <div className="chart-wrapper">
-
-            <Doughnut
-              data={doughnutData}
-              options={doughnutOptions}
-            />
-
+            <Doughnut data={chartData} />
           </div>
 
         </div>
 
-        {/* METRICS */}
+        <div className="stats-column">
 
-        <div className="daily-metrics">
-
-          <div className="metric-card">
+          <div className="stat-card fade-up">
             <span>😵‍💫 Stres</span>
-            <h3>{data.stressLevel} / 10</h3>
+            <h1>{data.stressLevel}/10</h1>
           </div>
 
-          <div className="metric-card">
+          <div className="stat-card fade-up">
             <span>💧 Su</span>
-            <h3>{data.waterAvg} L</h3>
+            <h1>{data.waterAvg} L</h1>
           </div>
 
-          <div className="metric-card">
+          <div className="stat-card fade-up">
             <span>😴 Uyku</span>
-            <h3>{data.sleepAvg} Saat</h3>
+            <h1>{data.sleepAvg} Saat</h1>
           </div>
 
         </div>
 
       </div>
 
-      {/* SUMMARY */}
-
-      <div className="daily-card summary-card">
+      <div className="summary-card fade-up">
 
         <h2>✨ Günlük Özet</h2>
 
         <p>
-          {data.suggestions?.join(" ")}
+          {data.suggestions?.join(" ") ||
+            "Bugün dengeli görünüyorsun."}
         </p>
 
       </div>
 
-      {/* ADVICE */}
+      <div className="quote-card fade-up">
 
-      <div className="daily-card">
+        <h2>🌸 Günün Motivasyon Sözü</h2>
+
+        <p>
+          {quotes[Math.floor(Math.random() * quotes.length)]}
+        </p>
+
+      </div>
+
+      <div className="advice-card fade-up">
 
         <h2>💚 İçgörü & Tavsiyeler</h2>
 
-        <div className="advice-list">
-
-          {data.detailedAdvice?.map((item, index) => (
-
-            <div
-              className="advice-item"
-              key={index}
-            >
-              ✨ {item}
-            </div>
-
-          ))}
-
-        </div>
+        {data.detailedAdvice?.map((item, index) => (
+          <div key={index} className="advice-item">
+            ✨ {item}
+          </div>
+        ))}
 
       </div>
 

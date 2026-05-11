@@ -1,146 +1,217 @@
 .weekly-analysis {
-  width: 100%;
-  padding: 20px 0 60px;
+  min-height: 100vh;
+  padding: 40px;
+  background: #f7faf7;
+  position: relative;
+  
 }
 
 .loading {
-  width: 100%;
-  text-align: center;
-  margin-top: 120px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #5c6b63;
+}
+
+.blur {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  z-index: 0;
+}
+
+.blur-1 {
+  width: 300px;
+  height: 300px;
+  background: #d9f3df;
+  top: -80px;
+  left: -80px;
+}
+
+.blur-2 {
+  width: 300px;
+  height: 300px;
+  background: #ffe5ec;
+  bottom: -100px;
+  right: -100px;
+}
+.floating-sticker {
+
+  position: fixed;
+
+  right: 20px;
+  bottom: 20px;
+
+  width: 120px;
+
+  z-index: 9999;
+
+  pointer-events: none;
+}
+
+
+.top-section {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-card,
+.quote-card {
+  flex: 1;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(14px);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+}
+
+.welcome-card h1 {
+  font-size: 34px;
+  margin-bottom: 12px;
+  color: #435448;
+}
+
+.welcome-card p {
+  color: #6d7b72;
+  line-height: 1.6;
+}
+
+.quote-card span {
+  color: #90a295;
+  font-size: 14px;
+}
+
+.quote-card h3 {
+  margin-top: 12px;
   font-size: 24px;
-  color: #6b7a6f;
-  font-weight: 500;
+  color: #4d5e53;
+  line-height: 1.5;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 24px;
-  margin-top: 20px;
+  position: relative;
+  z-index: 1;
 }
 
-.card {
-  background: rgba(255, 255, 255, 0.75);
+.big-card,
+.card,
+.mini-card {
+  background: rgba(255,255,255,0.75);
   backdrop-filter: blur(14px);
-
   border-radius: 28px;
-
   padding: 28px;
-
-  box-shadow:
-    0 8px 30px rgba(140, 170, 150, 0.12);
-
-  border: 1px solid rgba(255,255,255,0.5);
-
-  transition: 0.3s ease;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+  transition: 0.3s;
 }
 
-.card:hover {
-  transform: translateY(-4px);
+.big-card:hover,
+.card:hover,
+.mini-card:hover {
+  transform: translateY(-5px);
 }
 
-.big {
-  min-height: 520px;
-}
-
+.big-card h2,
 .card h2 {
-  font-size: 28px;
-  margin-bottom: 24px;
-  color: #445248;
-  font-weight: 700;
+  color: #46574c;
+  margin-bottom: 20px;
 }
 
-.doughnut-wrapper {
+.chart-wrapper {
+  max-width: 400px;
+  margin: auto;
+}
+
+.emotion-list {
+  margin-top: 30px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 36px;
   flex-wrap: wrap;
-  margin-top: 20px;
+  gap: 12px;
 }
 
-.legend {
+.emotion-item {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+.happy {
+  background: #dff3e5;
+  color: #5b8b6d;
+}
+
+.sad {
+  background: #ffe1e1;
+  color: #b76a6a;
+}
+
+.anxiety {
+  background: #fff0d9;
+  color: #b48a49;
+}
+
+.anger {
+  background: #ffdfe5;
+  color: #b25f72;
+}
+
+.side-cards {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 20px;
 }
 
-.legend p {
-  font-size: 18px;
-  color: #5c6a60;
-  background: #f7fbf7;
-  padding: 12px 18px;
-  border-radius: 16px;
-  min-width: 180px;
+.mini-card span {
+  color: #7c8b83;
 }
 
-.info-box {
-  margin-top: 30px;
-
-  background: linear-gradient(
-    135deg,
-    #eef8ef,
-    #f8fffa
-  );
-
-  border-radius: 22px;
-
-  padding: 20px;
-
-  font-size: 17px;
-  line-height: 1.7;
-
-  color: #55635a;
+.mini-card h2 {
+  margin-top: 14px;
+  font-size: 36px;
+  color: #4d5f54;
 }
 
-.ai {
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
   margin-top: 24px;
+  position: relative;
+  z-index: 1;
 }
 
-.ai p {
-  margin-top: 12px;
+.advice-card {
+  margin-top: 24px;
+  position: relative;
+  z-index: 1;
+}
 
-  line-height: 1.9;
-
+.advice-card p {
+  margin-top: 14px;
+  line-height: 1.8;
+  color: #647268;
   font-size: 17px;
-
-  color: #56635a;
 }
 
-canvas {
-  max-height: 340px !important;
-}
-
-@media (max-width: 1100px) {
-
-  .grid {
+@media (max-width: 900px) {
+  .grid,
+  .bottom-grid,
+  .top-section {
     grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
   }
 
-  .big {
-    min-height: auto;
+  .weekly-analysis {
+    padding: 20px;
   }
 
-}
-
-@media (max-width: 768px) {
-
-  .card {
-    padding: 22px;
-    border-radius: 22px;
-  }
-
-  .card h2 {
-    font-size: 24px;
-  }
-
-  .legend p {
-    width: 100%;
-    min-width: unset;
-  }
-
-  .loading {
-    font-size: 20px;
-  }
-
+  
 }
