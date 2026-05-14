@@ -65,22 +65,54 @@ export default function Friends() {
     <div className="page-bg">
       <div className="friends-container">
 
-        {/* 💥 HEADER */}
+        {/*  HEADER */}
         <div className="friends-header-card">
           <div className="header-row">
+
+            {/* SOL */}
             <div>
               <h1>Connections</h1>
-              <p>Dashboard / Connections</p>
+
+              <div className="header-path">
+                <span>Dashboard / Connections</span>
+
+                <span className="path-leaf">
+                  🌿
+                </span>
+              </div>
+
+              {/*  MINI AÇIKLAMA */}
+              <p className="connections-subtitle">
+                Bağlantılarınla etkileşim kur ve analizlerini takip et
+              </p>
             </div>
 
-            {/* 🌿 SAĞDAKİ TATLI ŞEY */}
-            <div className="header-badge">
-              🌿
+            {/* SAĞ */}
+            <div className="header-right">
+
+              <div className="header-stat-card">
+                <span className="stat-emoji">👥</span>
+
+                <div>
+                  <h3>{friends.length}</h3>
+                  <p>Friends</p>
+                </div>
+              </div>
+
+              <div className="header-stat-card">
+                <span className="stat-emoji">📨</span>
+
+                <div>
+                  <h3>{requests.length}</h3>
+                  <p>Requests</p>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
 
-        {/* 💥 CONTENT */}
+        {/*  CONTENT */}
         <div className="friends-content-card">
 
           {/* TABS */}
