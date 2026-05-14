@@ -86,6 +86,40 @@ export default function WeeklyAnalysis() {
       ? "Duyguların dengeli ilerliyor ✨"
       : "Biraz dinlenmeye ihtiyacın olabilir 🤍";
 
+  const badges = [];
+
+  if (avg(happy) > 70) {
+    badges.push({
+      emoji: "🌞",
+      title: "Positive Energy",
+      desc: "Bu hafta mutluluk seviyen yüksekti."
+  });
+}
+
+  if (data.stressLevel < 5) {
+    badges.push({
+      emoji: "🌿",
+      title: "Calm Mind",
+      desc: "Stres seviyeni dengede tuttun."
+  });
+}
+
+  if (moodScore > 20) {
+    badges.push({
+      emoji: "✨",
+      title: "Balanced Soul",
+      desc: "Duygusal dengen oldukça iyi görünüyordu."
+  });
+}
+
+  if (happy.length >= 7) {
+    badges.push({
+      emoji: "📖",
+      title: "Consistency",
+      desc: "Hafta boyunca düzenli giriş yaptın."
+  });
+}    
+
   const doughnutData = {
     labels: ["Mutluluk", "Üzgünlük", "Kaygı", "Öfke"],
 
@@ -274,6 +308,24 @@ export default function WeeklyAnalysis() {
           <Line data={stressData} options={options} />
         </div>
       </div>
+
+      <div className="badge-section">
+        <h2>🏅 Mood Badges</h2>
+
+        <div className="badge-grid">
+          {badges.map((badge, index) => (
+            <div className="badge-card" key={index}>
+             <div className="badge-emoji">
+              {badge.emoji}
+             </div>
+
+             <h3>{badge.title}</h3>
+
+             <p>{badge.desc}</p>
+         </div>
+       ))}
+     </div>
+    </div>
 
       <div className="card advice-card">
         <h2>İçgörü & Tavsiyeler 💌</h2>
