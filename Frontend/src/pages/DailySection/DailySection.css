@@ -253,7 +253,8 @@ h3 {
 .quote-card {
   display: flex;
   justify-content: space-between;
-  align-items: stretch;
+  align-items: center;
+  gap: 24px;
   min-height: 100%;
 }
 
@@ -266,16 +267,27 @@ h3 {
 
 .quote-card h2 {
   font-size: 2rem;
-  line-height: 1.2;
-  max-width: 280px;
+  line-height: 1.16;
+  max-width: 300px;
 }
 
 .plant-illustration {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 120px;
   min-width: 120px;
   color: var(--green-dark);
-  font-size: 5rem;
+  overflow: visible;
+}
+
+.plant-emoji {
+  display: inline-block;
+  font-size: 4.5rem;
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+  line-height: 1;
+  transform: translateY(-6px) scale(6.1);
+  transform-origin: center;
 }
 
 .habit-selection-card,

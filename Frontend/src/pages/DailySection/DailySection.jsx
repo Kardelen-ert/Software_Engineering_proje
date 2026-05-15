@@ -362,7 +362,7 @@ export default function DailySection() {
               <h2>Küçük adımlar büyük değişimler yaratır.</h2>
             </div>
             <div className="plant-illustration" aria-hidden="true">
-              <span>🌿</span>
+              <span className="plant-emoji">🌱</span>
             </div>
           </article>
         </section>
